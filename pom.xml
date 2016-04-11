@@ -24,9 +24,13 @@
     </scm>
     <distributionManagement>
         <repository>
-            <id>cloudbees-private-release-repository</id>
-            <url>dav:https://repository-saucelabs.forge.cloudbees.com/release</url>
+            <id>teamcity.s3.release</id>
+            <url>s3://sldc-static-assets-norcal/downloads/teamcity/release</url>
         </repository>
+        <snapshotRepository>
+            <id>teamcity.s3.snapshot</id>
+            <url>s3://sldc-static-assets-norcal/downloads/teamcity/snapshot</url>
+        </snapshotRepository>
     </distributionManagement>
     <build>
         <plugins>
@@ -89,6 +93,11 @@
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-webdav</artifactId>
                 <version>1.0-beta-2</version>
+            </extension>
+            <extension>
+                <groupId>org.kuali.maven.wagons</groupId>
+                <artifactId>maven-s3-wagon</artifactId>
+                <version>1.2.1</version>
             </extension>
         </extensions>
     </build>
