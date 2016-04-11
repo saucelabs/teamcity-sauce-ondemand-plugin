@@ -8,11 +8,14 @@
     </parent>
     <artifactId>sauceplugin-common</artifactId>
     <packaging>jar</packaging>
+    <properties>
+      <main.basedir>${project.parent.basedir}</main.basedir>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.saucelabs</groupId>
             <artifactId>ci-sauce</artifactId>
-            <version>1.107</version>
+            <version>${ci-sauce.version}</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>

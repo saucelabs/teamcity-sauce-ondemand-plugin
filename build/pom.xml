@@ -10,6 +10,7 @@
   <packaging>pom</packaging>
   <properties>
       <maven.build.timestamp.format>yyyyddMMHHmmss</maven.build.timestamp.format>
+      <main.basedir>${project.parent.basedir}</main.basedir>
   </properties>
   <dependencies>
       <dependency>
@@ -34,7 +35,7 @@
             <groupId>com.google.code.maven-replacer-plugin</groupId>
             <artifactId>replacer</artifactId>
             <version>1.5.2</version>
-            <executions>                
+            <executions>
                 <execution>
                     <phase>process-sources</phase>
                     <goals>
@@ -48,9 +49,17 @@
                 <replacements>
                     <replacement>
                         <token>@Version@</token>
-                        <value>snapshot-${maven.build.timestamp}</value>
+                        <value>${parent.version}</value>
                     </replacement>
-                </replacements>                        
+                    <replacement>
+                        <token>@VendorName@</token>
+                        <value>${parent.vendorName}</value>
+                    </replacement>
+                    <replacement>
+                        <token>@VendorURL@</token>
+                        <value>${parent.vendorUrl}</value>
+                    </replacement>
+                </replacements>
             </configuration>
         </plugin>
         <plugin>
@@ -78,7 +87,7 @@
                   <goal>single</goal>
                 </goals>
                 <configuration>
-                  <finalName>sauceLabsPlugin</finalName>
+                  <finalName>sauceplugin-${parent.version}</finalName>
                   <outputDirectory>${project.parent.build.directory}</outputDirectory>
                   <appendAssemblyId>false</appendAssemblyId>
                   <descriptors>

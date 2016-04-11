@@ -3,6 +3,7 @@ package com.saucelabs.teamcity;
 import com.saucelabs.ci.Browser;
 import com.saucelabs.ci.BrowserFactory;
 import com.saucelabs.ci.sauceconnect.SauceConnectFourManager;
+import com.saucelabs.saucerest.SauceREST;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.util.EventDispatcher;
@@ -22,6 +23,14 @@ import java.util.Collection;
  * @author Ross Rowe
  */
 public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
+
+    /*
+    static {
+        SauceREST.setExtraUserAgent("TeamCity/" + System.getProperty(
+            ServerProvidedProperties.TEAMCITY_VERSION_PROP) + " " +
+            "TeamCitySauceOnDemand-Agent/" + BuildUtils.getCurrentVersion());
+    }
+    */
 
     /**
      * Singleton Sauce Connect v4 manager instance, populated by Spring.

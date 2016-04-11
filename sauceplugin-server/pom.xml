@@ -8,6 +8,9 @@
   </parent>
   <artifactId>sauceplugin-server</artifactId>
   <packaging>jar</packaging>
+  <properties>
+    <main.basedir>${project.parent.basedir}</main.basedir>
+  </properties>
   <dependencies>
 
     <dependency>

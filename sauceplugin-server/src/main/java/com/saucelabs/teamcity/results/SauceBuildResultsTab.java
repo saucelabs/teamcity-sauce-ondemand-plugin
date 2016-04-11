@@ -37,8 +37,6 @@ public class SauceBuildResultsTab extends BuildTab {
 
     private static final String DATE_FORMAT = "yyyy-MM-dd-HH";
 
-    public static final String JOB_DETAILS_URL = "http://saucelabs.com/rest/v1/%1$s/build/%2$s/jobs?full=true&limit=200";
-
     private static final String HMAC_KEY = "HMACMD5";
 
     protected SauceBuildResultsTab(WebControllerManager manager, BuildsManager buildManager, PluginDescriptor myPluginDescriptor) {
@@ -94,13 +92,13 @@ public class SauceBuildResultsTab extends BuildTab {
         String buildNumber = build.getBuildTypeExternalId() + build.getBuildNumber();
         SauceREST sauceREST = new SauceREST(username, accessKey);
         logger.info("Retrieving Sauce jobs for " + buildNumber + " user: " + username);
-        String jsonResponse = sauceREST.retrieveResults(new URL(String.format(JOB_DETAILS_URL, username, buildNumber)));
+        String jsonResponse = sauceREST.getBuildFullJobs(buildNumber); // FIXME - limit 200);
         JSONObject job = new JSONObject(jsonResponse);
         JSONArray jobResults = job.getJSONArray("jobs");
         if (jobResults.length() == 0) {
             //try query using the build number
             logger.info("Retrieving Sauce jobs for " + build.getBuildNumber() + " user: " + username);
-            jsonResponse = sauceREST.retrieveResults(new URL(String.format(JOB_DETAILS_URL, username, build.getBuildNumber())));
+            jsonResponse = sauceREST.getBuildFullJobs(build.getBuildNumber()); // FIXME - limit 200);
             job = new JSONObject(jsonResponse);
             jobResults = job.getJSONArray("jobs");
         }
@@ -110,14 +108,10 @@ public class SauceBuildResultsTab extends BuildTab {
             JSONObject jobData = jobResults.getJSONObject(i);
             String jobId = jobData.getString("id");
             JobInformation information = new JobInformation(jobId, calcHMAC(username, accessKey, jobId));
-            String status = jobData.getString("passed");
-            if (status.equals("null")) {
-                status = "not set";
-            }
-            information.setStatus(status);
-            information.setName(jobData.getString("name"));
+            information.populateFromJson(jobData);
             jobInformation.add(information);
         }
+
         //the list of results retrieved from the Sauce REST API is last-first, so reverse the list
         Collections.reverse(jobInformation);
         return jobInformation;
