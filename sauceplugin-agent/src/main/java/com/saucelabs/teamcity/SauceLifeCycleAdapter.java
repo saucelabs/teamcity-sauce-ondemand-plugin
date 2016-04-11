@@ -135,7 +135,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
         String options = feature.getParameters().get(Constants.SAUCE_CONNECT_OPTIONS);
         if (options == null || options.equals("")) {
             //default tunnel identifier to teamcity-%teamcity.agent.name%
-            options = "-i teamcity-" + runningBuild.getSharedConfigParameters().get("teamcity.agent.name");
+            options = "-i teamcity-" + StringUtils.deleteWhitespace(runningBuild.getSharedConfigParameters().get("teamcity.agent.name"));
         }
         return options;
     }
