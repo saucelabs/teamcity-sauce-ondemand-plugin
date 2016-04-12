@@ -42,7 +42,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
     private BrowserFactory sauceBrowserFactory;
 
     /**
-     * @param agentDispatcher
+     * @param agentDispatcher ???
      * @param sauceBrowserFactory    Singleton instance used to retrieve browser information supported by Sauce, populated by Spring.
      * @param sauceFourTunnelManager Singleton Sauce Connect v4 manager instance, populated by Spring.
      */
@@ -337,9 +337,10 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
      * Generates a String that represents the Sauce OnDemand driver URL. This is used by the
      * <a href="http://selenium-client-factory.infradna.com/">selenium-client-factory</a> library to instantiate the Sauce-specific drivers.
      *
-     * @param username
-     * @param apiKey
-     * @param feature  @return String representing the Sauce OnDemand driver URI
+     * @param username String representing Sauce Username
+     * @param apiKey String representing Sauce API Key
+     * @param feature Plugin configuration
+     * @return String representing the Sauce OnDemand driver URI
      */
     protected String getSodDriverUri(String username, String apiKey, Browser browser, AgentBuildFeature feature) {
         StringBuilder sb = new StringBuilder("sauce-ondemand:?username=");
