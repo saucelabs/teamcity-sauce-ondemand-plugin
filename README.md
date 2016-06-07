@@ -1,6 +1,8 @@
 Sauce Labs TeamCity Plugin
 =====================
 
+[![Build Status](https://travis-ci.org/saucelabs/teamcity-sauce-ondemand-plugin.svg?branch=master)](https://travis-ci.org/saucelabs/teamcity-sauce-ondemand-plugin)
+
 This plugin allows you to integrate Sauce Labs with TeamCity. Specifically, you can:
 
 *    Specify the browsers versions and operating systems you want your tests to run against
