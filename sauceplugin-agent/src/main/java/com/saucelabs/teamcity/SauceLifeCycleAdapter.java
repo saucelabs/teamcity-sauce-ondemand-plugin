@@ -188,13 +188,6 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
      * @param feature      contains the Sauce information set by the user within the build configuration
      */
     private void populateEnvironmentVariables(AgentRunningBuild runningBuild, AgentBuildFeature feature) {
-
-        if (getProxyHost(feature) != null) {
-            setupProxy(feature);
-            //recreate browser factory to use proxy settings
-            sauceBrowserFactory = new BrowserFactory();
-        }
-
         Loggers.AGENT.info("Populating environment variables");
         String userName = getUsername(feature);
         String apiKey = getAccessKey(feature);
@@ -244,43 +237,6 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
         addSharedEnvironmentVariable(runningBuild, Constants.SELENIUM_IDLE_TIMEOUT_ENV, feature.getParameters().get(Constants.SELENIUM_IDLE_TIMEOUT_KEY));
         addSharedEnvironmentVariable(runningBuild, Constants.BUILD_NUMBER_ENV, runningBuild.getBuildTypeExternalId() + runningBuild.getBuildNumber());
 
-    }
-
-    private void setupProxy(AgentBuildFeature feature) {
-        String proxyHost = getProxyHost(feature);
-        if (StringUtils.isNotBlank(proxyHost)) {
-            System.setProperty("http.proxyHost", proxyHost);
-            System.setProperty("https.proxyHost", proxyHost);
-        }
-        String proxyPort = getProxyPort(feature);
-        if (StringUtils.isNotBlank(proxyPort)) {
-            System.setProperty("http.proxyPort", proxyPort);
-            System.setProperty("https.proxyPort", proxyPort);
-        }
-        String userName = getProxyUser(feature);
-        String password = getProxyPassword(feature);
-        if (StringUtils.isNotBlank(userName) && StringUtils.isNotBlank(password)) {
-            System.setProperty("http.proxyUser", userName);
-            System.setProperty("https.proxyUser", userName);
-            System.setProperty("http.proxyPassword", password);
-            System.setProperty("https.proxyPassword", password);
-        }
-    }
-
-    private String getProxyHost(AgentBuildFeature feature) {
-        return feature.getParameters().get(Constants.PROXY_HOST);
-    }
-
-    private String getProxyPort(AgentBuildFeature feature) {
-        return feature.getParameters().get(Constants.PROXY_PORT);
-    }
-
-    private String getProxyUser(AgentBuildFeature feature) {
-        return feature.getParameters().get(Constants.PROXY_USER);
-    }
-
-    private String getProxyPassword(AgentBuildFeature feature) {
-        return feature.getParameters().get(Constants.PROXY_PASSWORD);
     }
 
     /**
