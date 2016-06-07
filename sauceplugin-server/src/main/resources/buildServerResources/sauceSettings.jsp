@@ -31,7 +31,7 @@
 </tr>
 
 <tr id="saucePlugin.userId.container">
-    <th><label for="saucePlugin.userId">Sauce User test:</label></th>
+    <th><label for="saucePlugin.userId">Sauce User:</label></th>
     <td>
         <props:textProperty name="saucePlugin.userId"/>
     </td>
