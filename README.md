@@ -29,3 +29,31 @@ In order to integrate the Sauce tests with the TeamCity build, you will need to 
     SauceOnDemandSessionID=SESSION_ID job-name=JOB_NAME
 
 where SESSION_ID is the job session id, and job-name is the name of your job.
+
+Release process:
+===========
+
+Make sure you have below server tags added to maven settings (~/.m2/settings.xml)
+
+```
+<servers>
+    <server>
+     <id>teamcity.s3.release</id>
+     <username>AWS_ACCESS_KEY_ID</username>
+     <password>AWS_SECRET_ACCESS_KEY</password>
+   </server>
+   <server>
+     <id>teamcity.s3.snapshot</id>
+     <username>AWS_ACCESS_KEY_ID</username>
+     <password>AWS_SECRET_ACCESS_KEY</password>
+   </server>
+   <server>
+<servers>
+```
+
+Prepare release and perform:
+
+```
+mvn release:clean release:prepare
+mvn release:perform
+```
