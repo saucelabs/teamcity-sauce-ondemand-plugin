@@ -1,6 +1,8 @@
 Sauce Labs TeamCity Plugin
 =====================
 
+[![Build Status](https://travis-ci.org/saucelabs/teamcity-sauce-ondemand-plugin.svg?branch=master)](https://travis-ci.org/saucelabs/teamcity-sauce-ondemand-plugin)
+
 This plugin allows you to integrate Sauce Labs with TeamCity. Specifically, you can:
 
 *    Specify the browsers versions and operating systems you want your tests to run against
@@ -11,7 +13,9 @@ This plugin allows you to integrate Sauce Labs with TeamCity. Specifically, you 
 Installation
 ====
 
-[Download](https://repository-saucelabs.forge.cloudbees.com/release/com/saucelabs/teamcity/sauceplugin/1.32/sauceplugin-1.32.zip) the plugin zip file and copy it into your ~/.BuildServer/plugins directory
+[Download](https://saucelabs.com/downloads/teamcity/release/com/saucelabs/teamcity/build/1.35/build-1.35.zip) the plugin zip file and copy it into your ~/.BuildServer/plugins directory
+
+https://saucelabs.com/teamcity will always have up to date links and installation instructions
 
 Usage
 ===
@@ -25,3 +29,31 @@ In order to integrate the Sauce tests with the TeamCity build, you will need to 
     SauceOnDemandSessionID=SESSION_ID job-name=JOB_NAME
 
 where SESSION_ID is the job session id, and job-name is the name of your job.
+
+Release process:
+===========
+
+Make sure you have below server tags added to maven settings (~/.m2/settings.xml)
+
+```
+<servers>
+    <server>
+     <id>teamcity.s3.release</id>
+     <username>AWS_ACCESS_KEY_ID</username>
+     <password>AWS_SECRET_ACCESS_KEY</password>
+   </server>
+   <server>
+     <id>teamcity.s3.snapshot</id>
+     <username>AWS_ACCESS_KEY_ID</username>
+     <password>AWS_SECRET_ACCESS_KEY</password>
+   </server>
+   <server>
+<servers>
+```
+
+Prepare release and perform:
+
+```
+mvn release:clean release:prepare
+mvn release:perform
+```
