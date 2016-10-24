@@ -21,8 +21,8 @@ node {
   stage 'Archive Results'
   step([$class: 'ArtifactArchiver', artifacts: 'target/*.zip'])
 
-  stage 'Publish Results'
-  step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/TEST-*.xml'])
+  // stage 'Publish Results'
+  // step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/TEST-*.xml'])
 
   // stage 'Run codecov'
   // sh 'virtualenv .venv'
