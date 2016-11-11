@@ -2,8 +2,8 @@ package com.saucelabs.teamcity;
 
 import com.saucelabs.ci.Browser;
 import com.saucelabs.ci.BrowserFactory;
+import com.saucelabs.ci.sauceconnect.AbstractSauceTunnelManager;
 import com.saucelabs.ci.sauceconnect.SauceConnectFourManager;
-import com.saucelabs.saucerest.SauceREST;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.util.EventDispatcher;
@@ -115,6 +115,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
         try {
             Loggers.AGENT.info("Starting Sauce Connect");
             String options = getSauceConnectOptions(runningBuild, feature);
+            addSharedEnvironmentVariable(runningBuild, Constants.TUNNEL_IDENTIFIER, AbstractSauceTunnelManager.getTunnelIdentifier(options, "default"));
 
             sauceFourTunnelManager.openConnection(
                     getUsername(feature),

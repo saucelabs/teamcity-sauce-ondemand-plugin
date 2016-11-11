@@ -39,6 +39,7 @@ public class Constants {
     public static final String SELENIUM_DEVICE = "SELENIUM_DEVICE";
     public static final String SELENIUM_DEVICE_TYPE = "SELENIUM_DEVICE_TYPE";
     public static final String SELENIUM_ORIENTATION = "SELENIUM_ORIENTATION";
+    public static final String TUNNEL_IDENTIFIER = "TUNNEL_IDENTIFIER";
 
 
     private Constants() {
