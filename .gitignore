@@ -1,3 +1,4 @@
 target/
 *.iml
 src/main/java/com/saucelabs/teamcity/BuildUtils.java
+.idea/
