@@ -6,6 +6,8 @@ import com.saucelabs.ci.sauceconnect.SauceConnectFourManager;
 import com.saucelabs.saucerest.SauceREST;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.log.Loggers;
+import jetbrains.buildServer.messages.DefaultMessagesInfo;
+import jetbrains.buildServer.messages.Status;
 import jetbrains.buildServer.util.EventDispatcher;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -16,6 +18,8 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+
+// https://confluence.jetbrains.com/display/TCD10/Agent-side+Object+Model
 
 /**
  * Handles populating the environment variables and starting and stopping Sauce Connect when a TeamCity build is started/stopped.
@@ -40,6 +44,16 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
      * Singleton instance used to retrieve browser information supported by Sauce, populated by Spring.
      */
     private BrowserFactory sauceBrowserFactory;
+
+    private void logInfo(@NotNull AgentRunningBuild build, @NotNull String msg) {
+        Loggers.AGENT.info(msg);
+        build.getBuildLogger().logMessage(DefaultMessagesInfo.createTextMessage(msg));
+    }
+
+    private void logError(@NotNull AgentRunningBuild build, @NotNull String msg, @NotNull Throwable err) {
+        Loggers.AGENT.error(msg, err);
+        build.getBuildLogger().logMessage(DefaultMessagesInfo.createError(msg, null, err));
+    }
 
     /**
      * @param agentDispatcher ???
@@ -68,10 +82,9 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
         Collection<AgentBuildFeature> features = build.getBuildFeaturesOfType("sauce");
         if (features.isEmpty()) return;
         for (AgentBuildFeature feature : features) {
-            Loggers.AGENT.info("Closing Sauce Connect");
+            logInfo(build, "Closing Sauce Connect");
             if (shouldStartSauceConnect(feature)) {
                 String options = getSauceConnectOptions(build, feature);
-
                 sauceFourTunnelManager.closeTunnelsForPlan(getUsername(feature), options, null);
             }
         }
@@ -94,7 +107,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
     @Override
     public void buildStarted(@NotNull AgentRunningBuild runningBuild) {
         super.buildStarted(runningBuild);
-        Loggers.AGENT.info("Build Started, setting Sauce environment variables");
+        logInfo(runningBuild, "Build Started, setting Sauce environment variables");
         Collection<AgentBuildFeature> features = runningBuild.getBuildFeaturesOfType("sauce");
         if (features.isEmpty()) return;
         for (AgentBuildFeature feature : features) {
@@ -113,7 +126,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
      */
     private void startSauceConnect(AgentRunningBuild runningBuild, AgentBuildFeature feature) {
         try {
-            Loggers.AGENT.info("Starting Sauce Connect");
+            logInfo(runningBuild, "Starting Sauce Connect");
             String options = getSauceConnectOptions(runningBuild, feature);
 
             sauceFourTunnelManager.openConnection(
@@ -126,8 +139,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
                     Boolean.TRUE, null);
 
         } catch (IOException e) {
-            Loggers.AGENT.error("Error launching Sauce Connect", e);
-            //TODO log error to build log
+            logError(runningBuild, "Error launching Sauce Connect", e);
         }
     }
 
@@ -188,20 +200,20 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
      * @param feature      contains the Sauce information set by the user within the build configuration
      */
     private void populateEnvironmentVariables(AgentRunningBuild runningBuild, AgentBuildFeature feature) {
-        Loggers.AGENT.info("Populating environment variables");
+        logInfo(runningBuild, "Populating environment variables");
         String userName = getUsername(feature);
         String apiKey = getAccessKey(feature);
 
-        String[] selectedBrowsers = getSelectedBrowsers(feature);
+        String[] selectedBrowsers = getSelectedBrowsers(runningBuild, feature);
         if (selectedBrowsers.length == 0) {
-            Loggers.AGENT.error("No selected browsers found");
+            logInfo(runningBuild, "No selected browsers found");
         } else {
-            Loggers.AGENT.info("Selected browsers: " + Arrays.toString(selectedBrowsers));
+            logInfo(runningBuild, "Selected browsers: " + Arrays.toString(selectedBrowsers));
             if (selectedBrowsers.length == 1) {
                 Browser browser = sauceBrowserFactory.webDriverBrowserForKey(selectedBrowsers[0]);
                 if (browser == null) {
-                    Loggers.AGENT.info("No browser found for: " + selectedBrowsers[0]);
-                    Loggers.AGENT.info("Browsers : " + sauceBrowserFactory);
+                    logInfo(runningBuild, "No browser found for: " + selectedBrowsers[0]);
+                    logInfo(runningBuild, "Browsers : " + sauceBrowserFactory);
                 } else {
                     String sodDriverURI = getSodDriverUri(userName, apiKey, browser, feature);
                     addSharedEnvironmentVariable(runningBuild, Constants.SELENIUM_BROWSER_ENV, browser.getBrowserName());
@@ -218,7 +230,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
             for (String browser : selectedBrowsers) {
                 Browser browserInstance = sauceBrowserFactory.webDriverBrowserForKey(browser);
                 if (browserInstance != null) {
-                    browserAsJSON(userName, apiKey, browsersJSON, browserInstance);
+                    browserAsJSON(runningBuild, userName, apiKey, browsersJSON, browserInstance);
                 }
             }
             addSharedEnvironmentVariable(runningBuild, Constants.SAUCE_BROWSERS_ENV, browsersJSON.toString());
@@ -236,16 +248,16 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
         addSharedEnvironmentVariable(runningBuild, Constants.SELENIUM_MAX_DURATION_ENV, feature.getParameters().get(Constants.SELENIUM_MAX_DURATION_KEY));
         addSharedEnvironmentVariable(runningBuild, Constants.SELENIUM_IDLE_TIMEOUT_ENV, feature.getParameters().get(Constants.SELENIUM_IDLE_TIMEOUT_KEY));
         addSharedEnvironmentVariable(runningBuild, Constants.BUILD_NUMBER_ENV, runningBuild.getBuildTypeExternalId() + runningBuild.getBuildNumber());
-
     }
 
     /**
+     * @param runningBuild
      * @param userName
      * @param apiKey
      * @param browsersJSON
      * @param browserInstance
      */
-    private void browserAsJSON(String userName, String apiKey, JSONArray browsersJSON, Browser browserInstance) {
+    private void browserAsJSON(AgentRunningBuild runningBuild, String userName, String apiKey, JSONArray browsersJSON, Browser browserInstance) {
         if (browserInstance == null) {
             return;
         }
@@ -268,14 +280,14 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
             }
 
         } catch (JSONException e) {
-            Loggers.AGENT.error("Unable to create JSON Object", e);
+            logError(runningBuild, "Unable to create JSON Object", e);
         }
         browsersJSON.put(config);
     }
 
     private void addSharedEnvironmentVariable(AgentRunningBuild runningBuild, String key, String value) {
         if (value != null) {
-            Loggers.AGENT.info("Setting environment variable: " + key + " value: " + value);
+            logInfo(runningBuild, "Setting environment variable: " + key);
             runningBuild.addSharedEnvironmentVariable(key, value);
         }
     }
@@ -314,22 +326,24 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
     }
 
     /**
+     *
+     * @param runningBuild
      * @param feature contains the Sauce information set by the user within the build configuration
      * @return
      */
-    private String[] getSelectedBrowsers(AgentBuildFeature feature) {
-        Loggers.AGENT.info("Retrieving parameter: " + Constants.SELENIUM_SELECTED_BROWSER);
+    private String[] getSelectedBrowsers(AgentRunningBuild runningBuild, AgentBuildFeature feature) {
+        logInfo(runningBuild, "Retrieving parameter: " + Constants.SELENIUM_SELECTED_BROWSER);
         String selectedBrowser = feature.getParameters().get(Constants.SELENIUM_SELECTED_BROWSER);
-        Loggers.AGENT.info("Parameter value: " + selectedBrowser);
+        logInfo(runningBuild, "Parameter value: " + selectedBrowser);
         if (selectedBrowser != null) {
             String[] selectedBrowsers = selectedBrowser.split(",");
             if (selectedBrowsers.length != 0) {
                 return selectedBrowsers;
             }
         }
-        Loggers.AGENT.info("Retrieving parameter: " + Constants.SELENIUM_WEB_DRIVER_BROWSERS);
+        logInfo(runningBuild, "Retrieving parameter: " + Constants.SELENIUM_WEB_DRIVER_BROWSERS);
         selectedBrowser = feature.getParameters().get(Constants.SELENIUM_WEB_DRIVER_BROWSERS);
-        Loggers.AGENT.info("Parameter value: " + selectedBrowser);
+        logInfo(runningBuild, "Parameter value: " + selectedBrowser);
         if (selectedBrowser != null) {
             return selectedBrowser.split(",");
         } else {
