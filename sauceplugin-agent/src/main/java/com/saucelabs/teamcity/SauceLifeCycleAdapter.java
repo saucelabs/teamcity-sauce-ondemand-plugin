@@ -10,6 +10,7 @@ import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.messages.DefaultMessagesInfo;
 import jetbrains.buildServer.messages.Status;
 import jetbrains.buildServer.util.EventDispatcher;
+import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -17,6 +18,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -77,7 +79,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
      * @param buildStatus state of the build
      */
     @Override
-    public void beforeBuildFinish(@NotNull AgentRunningBuild build, @NotNull BuildFinishedStatus buildStatus) {
+    public void beforeBuildFinish(@NotNull final AgentRunningBuild build, @NotNull BuildFinishedStatus buildStatus) {
         super.beforeBuildFinish(build, buildStatus);
 
         Collection<AgentBuildFeature> features = build.getBuildFeaturesOfType("sauce");
@@ -86,7 +88,14 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
             logInfo(build, "Closing Sauce Connect");
             if (shouldStartSauceConnect(feature)) {
                 String options = getSauceConnectOptions(build, feature);
-                sauceFourTunnelManager.closeTunnelsForPlan(getUsername(feature), options, null);
+                PrintStream printStream = new PrintStream(new NullOutputStream()) {
+                    @Override
+                    public void println(String x) {
+                        build.getBuildLogger().logMessage(DefaultMessagesInfo.createTextMessage(x));
+                    }
+                };
+
+                sauceFourTunnelManager.closeTunnelsForPlan(getUsername(feature), options, printStream);
             }
         }
     }
@@ -125,11 +134,18 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
      * @param runningBuild
      * @param feature      contains the Sauce information set by the user within the build configuration
      */
-    private void startSauceConnect(AgentRunningBuild runningBuild, AgentBuildFeature feature) {
+    private void startSauceConnect(final AgentRunningBuild runningBuild, AgentBuildFeature feature) {
         try {
             logInfo(runningBuild, "Starting Sauce Connect");
             String options = getSauceConnectOptions(runningBuild, feature);
             addSharedEnvironmentVariable(runningBuild, Constants.TUNNEL_IDENTIFIER, AbstractSauceTunnelManager.getTunnelIdentifier(options, "default"));
+
+            PrintStream printStream = new PrintStream(new NullOutputStream()) {
+                @Override
+                public void println(String x) {
+                    runningBuild.getBuildLogger().logMessage(DefaultMessagesInfo.createTextMessage(x));
+                }
+            };
 
             sauceFourTunnelManager.openConnection(
                     getUsername(feature),
@@ -137,8 +153,10 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
                     Integer.parseInt(getSeleniumPort(feature)),
                     null,
                     options,
-                    null,
-                    Boolean.TRUE, null);
+                    printStream,
+                    Boolean.TRUE,
+                    null
+            );
 
         } catch (IOException e) {
             logError(runningBuild, "Error launching Sauce Connect", e);
