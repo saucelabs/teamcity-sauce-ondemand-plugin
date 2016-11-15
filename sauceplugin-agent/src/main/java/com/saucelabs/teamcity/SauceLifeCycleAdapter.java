@@ -4,6 +4,7 @@ import com.saucelabs.ci.Browser;
 import com.saucelabs.ci.BrowserFactory;
 import com.saucelabs.ci.sauceconnect.AbstractSauceTunnelManager;
 import com.saucelabs.ci.sauceconnect.SauceConnectFourManager;
+import jetbrains.buildServer.BuildProblemData;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.messages.DefaultMessagesInfo;
@@ -141,6 +142,11 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
 
         } catch (IOException e) {
             logError(runningBuild, "Error launching Sauce Connect", e);
+            runningBuild.getBuildLogger().logBuildProblem(BuildProblemData.createBuildProblem(
+                    "SAUCE_CONNECT",
+                    "FAILED_TO_START_SAUCE_CONNECT",
+                    "Failed to start sauce connect: " + e.getMessage()
+            ));
         }
     }
 
