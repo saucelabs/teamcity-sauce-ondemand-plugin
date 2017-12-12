@@ -11,7 +11,7 @@ import jetbrains.buildServer.messages.DefaultMessagesInfo;
 import jetbrains.buildServer.messages.Status;
 import jetbrains.buildServer.util.EventDispatcher;
 import org.apache.commons.io.output.NullOutputStream;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
