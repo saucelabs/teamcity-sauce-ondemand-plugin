@@ -32,6 +32,7 @@ public class Constants {
     public static final String SAUCE_CONNECT_OPTIONS = "saucePlugin.sauceConnectOptions";
     public static final String SAUCE_HTTPS_PROTOCOL = "saucePlugin.httpsProtocol";
     public static final String SAUCE_CONNECT_KEY = "saucePlugin.sauceConnect";
+    public static final String USE_LATEST_SAUCE_CONNECT = "saucePlugin.useLatestSauceConnect";
     public static final String DISABLE_RESULTS_KEY = "saucePlugin.disableResults";
     public static final String SAUCE_USERNAME = "SAUCE_USERNAME";
     public static final String SAUCE_ACCESS_KEY = "SAUCE_ACCESS_KEY";

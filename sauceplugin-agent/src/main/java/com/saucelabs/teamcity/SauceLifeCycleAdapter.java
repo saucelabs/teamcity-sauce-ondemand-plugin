@@ -147,6 +147,9 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
                 }
             };
 
+            // set to use latest sauce if set
+            ((SauceConnectFourManager) sauceFourTunnelManager).setUseLatestSauceConnect(shouldUseLatestSauceConnect(feature));
+
             sauceFourTunnelManager.openConnection(
                     getUsername(feature),
                     getAccessKey(feature),
@@ -221,8 +224,17 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
     }
 
     /**
+     * @param feature contains the Sauce information set by the user within the build configuration
+     * @return boolean indicating whether the latest Sauce Connect should be used
+     */
+    private boolean shouldUseLatestSauceConnect(AgentBuildFeature feature) {
+        String useSauceConnect = feature.getParameters().get(Constants.USE_LATEST_SAUCE_CONNECT);
+        return useSauceConnect != null && useSauceConnect.equals("true");
+    }
+
+    /**
      * @param runningBuild
-     * @param feature      contains the Sauce information set by the user within the build configuration
+     * @param feature contains the Sauce information set by the user within the build configuration
      */
     private void populateEnvironmentVariables(AgentRunningBuild runningBuild, AgentBuildFeature feature) {
         logInfo(runningBuild, "Populating environment variables");
