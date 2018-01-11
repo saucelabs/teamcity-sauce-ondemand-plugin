@@ -13,7 +13,7 @@ This plugin allows you to integrate Sauce Labs with TeamCity. Specifically, you 
 Installation
 ====
 
-[Download](https://saucelabs.com/downloads/teamcity/release/com/saucelabs/teamcity/build/1.44/build-1.44.zip) the plugin zip file and copy it into your ~/.BuildServer/plugins directory
+[Download](https://saucelabs.com/downloads/teamcity/release/com/saucelabs/teamcity/build/1.45/build-1.45.zip) the plugin zip file and copy it into your ~/.BuildServer/plugins directory
 
 https://saucelabs.com/teamcity will always have up to date links and installation instructions
 
