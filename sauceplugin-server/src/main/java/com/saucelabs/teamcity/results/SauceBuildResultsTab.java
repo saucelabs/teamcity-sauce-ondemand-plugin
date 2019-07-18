@@ -88,7 +88,7 @@ public class SauceBuildResultsTab extends BuildTab {
             return null;
         }
         String username = sauceBuildFeature.getParameters().get(Constants.SAUCE_USER_ID_KEY);
-        String accessKey = sauceBuildFeature.getParameters().get(Constants.SAUCE_PLUGIN_DATA_CENTER);
+        String accessKey = sauceBuildFeature.getParameters().get(Constants.SAUCE_PLUGIN_ACCESS_KEY);
         String dataCenter = sauceBuildFeature.getParameters().get(Constants.SAUCE_PLUGIN_DATA_CENTER);
         String buildNumber = build.getBuildTypeExternalId() + build.getBuildNumber();
         SauceREST sauceREST = new SauceREST(username, accessKey, dataCenter);

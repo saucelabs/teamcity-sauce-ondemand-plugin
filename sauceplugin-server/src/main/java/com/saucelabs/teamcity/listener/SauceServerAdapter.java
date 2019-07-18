@@ -76,7 +76,7 @@ public class SauceServerAdapter extends BuildServerAdapter {
         if (features.isEmpty()) return;
         for (SBuildFeatureDescriptor feature : features) {
             if (feature.getType().equals("sauce")) {
-                SauceREST sauceREST = new SauceREST(getUsername(feature), getAccessKey(feature), "EU");
+                SauceREST sauceREST = new SauceREST(getUsername(feature), getAccessKey(feature), getDataCenter(feature));
                 Map<String, Object> updates = new HashMap<String, Object>();
                 try {
                     String json = sauceREST.getJobInfo(sessionId);
@@ -108,4 +108,7 @@ public class SauceServerAdapter extends BuildServerAdapter {
         return feature.getParameters().get(Constants.SAUCE_USER_ID_KEY);
     }
 
+    private String getDataCenter(SBuildFeatureDescriptor feature) {
+        return feature.getParameters().get(Constants.SAUCE_PLUGIN_DATA_CENTER)
+    } 
 }

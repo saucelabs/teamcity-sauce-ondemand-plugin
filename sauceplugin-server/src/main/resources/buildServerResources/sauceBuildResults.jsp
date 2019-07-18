@@ -33,7 +33,7 @@
         <div id="sauce-job" class="groupBox">
             <h2>Details for ${param.jobId}</h2>
             <script type="text/javascript"
-                    src="https://saucelabs.com/job-embed/${param.jobId}.js?auth=${param.hmac}"></script>
+                    src="${sauceREST.appServer}/job-embed/${param.jobId}.js?auth=${param.hmac}"></script>
 
         </div>
         <div>
