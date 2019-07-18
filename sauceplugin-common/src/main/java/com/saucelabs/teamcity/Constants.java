@@ -28,6 +28,7 @@ public class Constants {
     public static final String SELENIUM_MAX_DURATION_KEY = "saucePlugin.maxDuration";
     public static final String SELENIUM_IDLE_TIMEOUT_KEY = "saucePlugin.idleTimeout";
     public static final String SELENIUM_SELECTED_BROWSER = "saucePlugin.selectedBrowsers";
+    public static final String SAUCE_PLUGIN_DATA_CENTER = "saucePlugin.dataCenter";
     public static final String SELENIUM_WEB_DRIVER_BROWSERS = "saucePlugin.webDriverBrowsers";
     public static final String SAUCE_CONNECT_OPTIONS = "saucePlugin.sauceConnectOptions";
     public static final String SAUCE_HTTPS_PROTOCOL = "saucePlugin.httpsProtocol";
@@ -36,6 +37,7 @@ public class Constants {
     public static final String DISABLE_RESULTS_KEY = "saucePlugin.disableResults";
     public static final String SAUCE_USERNAME = "SAUCE_USERNAME";
     public static final String SAUCE_ACCESS_KEY = "SAUCE_ACCESS_KEY";
+    public static final String SAUCE_DATA_CENTER = "SAUCE_DATA_CENTER";
     public static final String USE_SAUCE_CONNECT_3 = "saucePlugin.sauceConnectv3";
     public static final String SELENIUM_DEVICE = "SELENIUM_DEVICE";
     public static final String SELENIUM_DEVICE_TYPE = "SELENIUM_DEVICE_TYPE";

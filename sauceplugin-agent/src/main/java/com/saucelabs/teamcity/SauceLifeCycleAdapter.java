@@ -4,6 +4,7 @@ import com.saucelabs.ci.Browser;
 import com.saucelabs.ci.BrowserFactory;
 import com.saucelabs.ci.sauceconnect.AbstractSauceTunnelManager;
 import com.saucelabs.ci.sauceconnect.SauceConnectFourManager;
+import com.saucelabs.saucerest.SauceREST;
 import jetbrains.buildServer.BuildProblemData;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.log.Loggers;
@@ -173,10 +174,13 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
 
     private String getSauceConnectOptions(AgentRunningBuild runningBuild, AgentBuildFeature feature) {
         String options = feature.getParameters().get(Constants.SAUCE_CONNECT_OPTIONS);
+        SauceREST sauceREST = getSauceREST(feature);
+
         if (options == null || options.equals("")) {
             //default tunnel identifier to teamcity-%teamcity.agent.name%
             options = "-i teamcity-" + StringUtils.deleteWhitespace(runningBuild.getSharedConfigParameters().get("teamcity.agent.name"));
         }
+        options = "-x " + sauceREST.getServer() + "rest/v1" + " " + options;
         return options;
     }
 
@@ -240,6 +244,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
         logInfo(runningBuild, "Populating environment variables");
         String userName = getUsername(feature);
         String apiKey = getAccessKey(feature);
+        String dataCenter = getDataCenter(feature);
 
         String[] selectedBrowsers = getSelectedBrowsers(runningBuild, feature);
         if (selectedBrowsers.length == 0) {
@@ -278,6 +283,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
         //backwards compatibility with environment variables expected by Sausage
         addSharedEnvironmentVariable(runningBuild, Constants.SAUCE_USERNAME, userName);
         addSharedEnvironmentVariable(runningBuild, Constants.SAUCE_ACCESS_KEY, apiKey);
+        addSharedEnvironmentVariable(runningBuild, Constants.SAUCE_DATA_CENTER, dataCenter);
 
         addSharedEnvironmentVariable(runningBuild, Constants.SELENIUM_HOST_ENV, getSeleniumHost(feature));
         addSharedEnvironmentVariable(runningBuild, Constants.SELENIUM_PORT_ENV, getSeleniumPort(feature));
@@ -337,7 +343,17 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
         return feature.getParameters().get(Constants.SAUCE_USER_ID_KEY);
     }
 
+    private String getDataCenter(AgentBuildFeature feature) {
+        return feature.getParameters().get(Constants.SAUCE_PLUGIN_DATA_CENTER);
+    }
 
+    protected SauceREST getSauceREST(AgentBuildFeature feature) {
+        return new SauceREST(
+            feature.getParameters().get(Constants.SAUCE_PLUGIN_ACCESS_KEY),
+            feature.getParameters().get(Constants.SAUCE_USER_ID_KEY),
+            feature.getParameters().get(Constants.SAUCE_PLUGIN_DATA_CENTER)
+        );
+    }
     /**
      * Generates a String that represents the Sauce OnDemand driver URL. This is used by the
      * <a href="http://selenium-client-factory.infradna.com/">selenium-client-factory</a> library to instantiate the Sauce-specific drivers.

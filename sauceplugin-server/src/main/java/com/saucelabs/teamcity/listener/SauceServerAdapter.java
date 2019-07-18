@@ -76,7 +76,7 @@ public class SauceServerAdapter extends BuildServerAdapter {
         if (features.isEmpty()) return;
         for (SBuildFeatureDescriptor feature : features) {
             if (feature.getType().equals("sauce")) {
-                SauceREST sauceREST = new SauceREST(getUsername(feature), getAccessKey(feature));
+                SauceREST sauceREST = new SauceREST(getUsername(feature), getAccessKey(feature), "EU");
                 Map<String, Object> updates = new HashMap<String, Object>();
                 try {
                     String json = sauceREST.getJobInfo(sessionId);

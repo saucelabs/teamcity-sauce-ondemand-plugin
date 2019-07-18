@@ -58,7 +58,12 @@
     </td>
 </tr>
 
-
+<tr id="saucePlugin.dataCenter.container">
+    <th><label for="saucePlugin.dataCenter">Data Center:</label></th>
+    <td>
+        <props:textProperty name="saucePlugin.dataCenter" />
+    </td>
+</tr>
 
 <tr id="saucePlugin.webDriverBrowsers.container">
     <th><label for="saucePlugin.webDriverBrowsers">Browsers:</label></th>
@@ -96,7 +101,7 @@
 </tr>
 
 <tr id="saucePlugin.useLatestSauceConnect.container">
-    <th><label for="saucePlugin.useLatestSauceConnect">Use latest <a href="https://wiki.saucelabs.com/display/DOCS/Sauce+Connect+Proxy">Sauce Connect</a> (if unchecked, uses 4.4.11):</label></th>
+    <th><label for="saucePlugin.useLatestSauceConnect">Use latest <a href="https://wiki.saucelabs.com/display/DOCS/Sauce+Connect+Proxy">Sauce Connect</a> (if unchecked, uses 4.5.4):</label></th>
     <td>
         <props:checkboxProperty name="saucePlugin.useLatestSauceConnect" treatFalseValuesCorrectly="${true}"
                                 uncheckedValue="false"/>
