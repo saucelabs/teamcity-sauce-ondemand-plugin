@@ -109,6 +109,6 @@ public class SauceServerAdapter extends BuildServerAdapter {
     }
 
     private String getDataCenter(SBuildFeatureDescriptor feature) {
-        return feature.getParameters().get(Constants.SAUCE_PLUGIN_DATA_CENTER)
+        return feature.getParameters().get(Constants.SAUCE_PLUGIN_DATA_CENTER);
     } 
 }
