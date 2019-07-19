@@ -91,7 +91,8 @@ public class SauceBuildResultsTab extends BuildTab {
         String accessKey = sauceBuildFeature.getParameters().get(Constants.SAUCE_PLUGIN_ACCESS_KEY);
         String dataCenter = sauceBuildFeature.getParameters().get(Constants.SAUCE_PLUGIN_DATA_CENTER);
         String buildNumber = build.getBuildTypeExternalId() + build.getBuildNumber();
-        SauceREST sauceREST = new SauceREST(username, accessKey, dataCenter);
+        SauceREST sauceREST = getSauceREST(username, accessKey, dataCenter);
+
         logger.info("Retrieving Sauce jobs for " + buildNumber + " user: " + username);
         String jsonResponse = sauceREST.getBuildFullJobs(buildNumber); // FIXME - limit 200);
         JSONObject job = new JSONObject(jsonResponse);
@@ -110,6 +111,7 @@ public class SauceBuildResultsTab extends BuildTab {
             String jobId = jobData.getString("id");
             JobInformation information = new JobInformation(jobId, calcHMAC(username, accessKey, jobId));
             information.populateFromJson(jobData);
+            information.setLogUrl(getLogUrl(dataCenter));
             jobInformation.add(information);
         }
 
@@ -179,4 +181,21 @@ public class SauceBuildResultsTab extends BuildTab {
         byte[] hexBytes = new Hex().encode(hmacBytes);
         return new String(hexBytes, "ISO-8859-1");
     }
+    protected SauceREST getSauceREST(String username, String accessKey, String dataCenter) {
+        if (dataCenter == null || dataCenter == "") {
+            dataCenter = "US";
+        }
+        return new SauceREST(username,  accessKey, dataCenter);
+    }
+
+    private String getLogUrl(String dataCenter) {
+        String url = "https://app.saucelabs.com";
+        if (dataCenter.equals("EU")) {
+            url = "https://app.eu-central-1.saucelabs.com";
+        }
+        if (dataCenter.equals("US_EAST")) {
+            url = "https://https://app.us-east-1.saucelabs.com";
+        }
+        return url;
+    } 
 }

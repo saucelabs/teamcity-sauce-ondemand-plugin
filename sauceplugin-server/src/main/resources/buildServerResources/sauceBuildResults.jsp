@@ -5,6 +5,7 @@
 
 <jsp:useBean id="build" scope="request" type="jetbrains.buildServer.serverSide.SBuild"/>
 <jsp:useBean id="jobs" scope="request" type="java.util.ArrayList"/>
+
 <div id="sauce-job-list" class="groupBox">
     <table>
         <tr>
@@ -15,7 +16,7 @@
         <c:forEach var="jobIter" items="${jobs}">
             <tr>
                 <td>
-                    <a href="<%=request.getAttribute("javax.servlet.forward.request_uri")%>?buildId=<%=request.getParameter("buildId")%>&buildTypeId=<%=request.getParameter("buildTypeId")%>&tab=<%=request.getParameter("tab")%>&jobId=${jobIter.jobId}&hmac=${jobIter.hmac}">${jobIter.jobId}</a>
+                    <a href="<%=request.getAttribute("javax.servlet.forward.request_uri")%>?buildId=<%=request.getParameter("buildId")%>&buildTypeId=<%=request.getParameter("buildTypeId")%>&tab=<%=request.getParameter("tab")%>&jobId=${jobIter.jobId}&logUrl=${jobIter.logUrl}&hmac=${jobIter.hmac}">${jobIter.jobId}</a>
                 </td>
                 <td>
                         ${jobIter.name}
@@ -31,10 +32,9 @@
 <c:choose>
     <c:when test="${param.jobId != null}">
         <div id="sauce-job" class="groupBox">
-            <h2>Details for ${param.jobId}</h2>
+           <h2>Details for ${param.logUrl}</h2>
             <script type="text/javascript"
-                    src="${sauceREST.appServer}/job-embed/${param.jobId}.js?auth=${param.hmac}"></script>
-
+                    src="${param.logUrl}/job-embed/${param.jobId}.js?auth=${param.hmac}"></script>
         </div>
         <div>
             <script type="text/javascript">

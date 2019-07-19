@@ -348,10 +348,15 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
     }
 
     protected SauceREST getSauceREST(AgentBuildFeature feature) {
+        String dataCenter = feature.getParameters().get(Constants.SAUCE_PLUGIN_DATA_CENTER);
+        if (dataCenter == null || dataCenter == "") {
+            dataCenter = "US";
+        }
+
         return new SauceREST(
             feature.getParameters().get(Constants.SAUCE_PLUGIN_ACCESS_KEY),
             feature.getParameters().get(Constants.SAUCE_USER_ID_KEY),
-            feature.getParameters().get(Constants.SAUCE_PLUGIN_DATA_CENTER)
+            dataCenter
         );
     }
     /**
