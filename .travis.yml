@@ -4,8 +4,7 @@ cache:
   - $HOME/.m2/repository
 sudo: false
 jdk:
-- oraclejdk8
-- openjdk7
+- openjdk8
 before_install:
 - pip install --user codecov
 after_success:

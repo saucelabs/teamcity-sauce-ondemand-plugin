@@ -22,7 +22,7 @@ Usage
 
 The plugin provides a 'Sauce Labs Build Feature' which can be added a TeamCity build.
 
-Once the build feature has been selected, enter your Sauce Labs username and access key, and specify whether you want Sauce Connect to be launched as part of your build.  You can also select the browsers you wish to be used by your tests.
+Once the build feature has been selected, enter your Sauce Labs username and access key, and specify whether you want Sauce Connect to be launched as part of your build.  You can also select the browsers you wish to be used by your tests and the data center your tests and sauce connect will be run on.  By default sauce connect will connect to our 'US' data center other options are 'US_EAST' for headless testing and 'EU'. 
 
 In order to integrate the Sauce tests with the TeamCity build, you will need to include the following output as part of the running of each test:
 
