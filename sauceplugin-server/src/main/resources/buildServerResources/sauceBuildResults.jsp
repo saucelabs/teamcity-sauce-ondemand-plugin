@@ -32,9 +32,12 @@
 <c:choose>
     <c:when test="${param.jobId != null}">
         <div id="sauce-job" class="groupBox">
-           <h2>Details for ${param.logUrl}</h2>
-            <script type="text/javascript"
-                    src="${param.logUrl}/job-embed/${param.jobId}.js?auth=${param.hmac}"></script>
+           <h2>Details for ${param.jobId}</h2>
+            <script 
+                type="text/javascript"
+                src="${param.logUrl}/job-embed/${param.jobId}.js?auth=${param.hmac}"
+            >
+            </script>
         </div>
         <div>
             <script type="text/javascript">

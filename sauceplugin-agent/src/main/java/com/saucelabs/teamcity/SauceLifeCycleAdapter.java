@@ -118,7 +118,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
     @Override
     public void buildStarted(@NotNull AgentRunningBuild runningBuild) {
         super.buildStarted(runningBuild);
-        logInfo(runningBuild, "Build Started, setting Sauce environment variables (1.144-SNAPSHOT with downgraded plexus)");
+        logInfo(runningBuild, "Build Started, setting Sauce environment variables");
         Collection<AgentBuildFeature> features = runningBuild.getBuildFeaturesOfType("sauce");
         if (features.isEmpty()) return;
         for (AgentBuildFeature feature : features) {
