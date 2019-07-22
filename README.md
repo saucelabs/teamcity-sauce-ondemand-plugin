@@ -15,7 +15,7 @@ Installation
 
 [Download](https://saucelabs.com/downloads/teamcity/release/com/saucelabs/teamcity/build/1.45/build-1.45.zip) the plugin zip file and copy it into your ~/.BuildServer/plugins directory
 
-This github repo will always have up to date links and installation instructions
+[The wiki] https://wiki.saucelabs.com/pages/viewpage.action?pageId=48365783 installation instructions
 
 Usage
 ===
