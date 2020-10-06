@@ -5,6 +5,8 @@
 
     <bean id="sauceSystemSettings" class="com.saucelabs.teamcity.settings.SauceSystemSettings"/>
 
+    <bean id="sauceSystemCSP" class="com.saucelabs.teamcity.settings.SauceSystemCSP"/>
+
     <bean id="sauceServerListener" class="com.saucelabs.teamcity.listener.SauceServerAdapter" init-method="register"/>
 
     <bean id="sauceBuildResultsTab" class="com.saucelabs.teamcity.results.SauceBuildResultsTab"/>
