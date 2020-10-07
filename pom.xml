@@ -16,6 +16,10 @@
             <id>JetBrains</id>
             <url>http://repository.jetbrains.com/all</url>
         </repository>
+        <repository>
+            <id>jetbrains-all</id>
+            <url>https://download.jetbrains.com/teamcity-repository</url>
+        </repository>
     </repositories>
     <scm>
         <connection>scm:git:git://github.com/saucelabs/teamcity-sauce-ondemand-plugin.git</connection>
