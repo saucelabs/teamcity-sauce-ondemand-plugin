@@ -2,6 +2,7 @@ package com.saucelabs.teamcity.listener;
 
 import com.saucelabs.saucerest.SauceREST;
 import com.saucelabs.teamcity.Constants;
+import com.saucelabs.teamcity.ParametersProvider;
 import jetbrains.buildServer.serverSide.BuildServerAdapter;
 import jetbrains.buildServer.serverSide.SBuildFeatureDescriptor;
 import jetbrains.buildServer.serverSide.SBuildServer;
@@ -101,14 +102,17 @@ public class SauceServerAdapter extends BuildServerAdapter {
     }
 
     private String getAccessKey(SBuildFeatureDescriptor feature) {
-        return feature.getParameters().get(Constants.SAUCE_PLUGIN_ACCESS_KEY);
+        ParametersProvider provider = new ParametersProvider(feature.getParameters());
+        return provider.getAccessKey();
     }
 
     private String getUsername(SBuildFeatureDescriptor feature) {
-        return feature.getParameters().get(Constants.SAUCE_USER_ID_KEY);
+        ParametersProvider provider = new ParametersProvider(feature.getParameters());
+        return provider.getUsername();
     }
 
     private String getDataCenter(SBuildFeatureDescriptor feature) {
-        return feature.getParameters().get(Constants.SAUCE_PLUGIN_DATA_CENTER);
+        ParametersProvider provider = new ParametersProvider(feature.getParameters());
+        return provider.getDataCenter();
     } 
 }
