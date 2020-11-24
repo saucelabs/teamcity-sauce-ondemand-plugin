@@ -196,7 +196,7 @@ public class SauceBuildResultsTab extends BuildTab {
             url = "https://app.eu-central-1.saucelabs.com";
         }
         if (dataCenter.equals("US_EAST")) {
-            url = "https://https://app.us-east-1.saucelabs.com";
+            url = "https://app.us-east-1.saucelabs.com";
         }
         return url;
     } 
