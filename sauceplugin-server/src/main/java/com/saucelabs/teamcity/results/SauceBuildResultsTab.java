@@ -88,7 +88,7 @@ public class SauceBuildResultsTab extends BuildTab {
         if (sauceBuildFeature == null) {
             return null;
         }
-        ParametersProvider provider = new ParametersProvider(sauceBuildFeature.getParameters(), build.getAgentName());
+        ParametersProvider provider = getParametersProvider(sauceBuildFeature, build.getAgentName());
         String username = provider.getUsername();
         String accessKey = provider.getAccessKey();
         String dataCenter = provider.getAccessKey();
@@ -184,9 +184,6 @@ public class SauceBuildResultsTab extends BuildTab {
         return new String(hexBytes, "ISO-8859-1");
     }
     protected SauceREST getSauceREST(String username, String accessKey, String dataCenter) {
-        if (dataCenter == null || dataCenter == "") {
-            dataCenter = "US";
-        }
         return new SauceREST(username,  accessKey, dataCenter);
     }
 
@@ -199,5 +196,10 @@ public class SauceBuildResultsTab extends BuildTab {
             url = "https://app.us-east-1.saucelabs.com";
         }
         return url;
-    } 
+    }
+
+    @NotNull
+    private ParametersProvider getParametersProvider(SBuildFeatureDescriptor feature, String agentName) {
+        return new ParametersProvider(feature.getParameters(), agentName);
+    }
 }

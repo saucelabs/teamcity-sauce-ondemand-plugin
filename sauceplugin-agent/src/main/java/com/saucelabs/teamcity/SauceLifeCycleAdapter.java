@@ -96,8 +96,8 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
                     }
                 };
 
-                String agentName = build.getAgentConfiguration().getName();
-                sauceFourTunnelManager.closeTunnelsForPlan(getUsername(feature, agentName), options, printStream);
+                ParametersProvider provider = getParametersProvider(feature, build.getAgentConfiguration().getName());
+                sauceFourTunnelManager.closeTunnelsForPlan(provider.getUsername(), options, printStream);
             }
         }
     }
@@ -141,7 +141,6 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
             logInfo(runningBuild, "Starting Sauce Connect");
             String options = getSauceConnectOptions(runningBuild, feature);
             addSharedEnvironmentVariable(runningBuild, Constants.TUNNEL_IDENTIFIER, AbstractSauceTunnelManager.getTunnelIdentifier(options, "default"));
-            String agentName = runningBuild.getAgentConfiguration().getName();
 
             PrintStream printStream = new PrintStream(new NullOutputStream()) {
                 @Override
@@ -150,12 +149,15 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
                 }
             };
 
+            String agentName = runningBuild.getAgentConfiguration().getName();
+            ParametersProvider provider = getParametersProvider(feature, agentName);
+
             // set to use latest sauce if set
             ((SauceConnectFourManager) sauceFourTunnelManager).setUseLatestSauceConnect(shouldUseLatestSauceConnect(feature));
 
             sauceFourTunnelManager.openConnection(
-                    getUsername(feature, agentName),
-                    getAccessKey(feature, agentName),
+                    provider.getUsername(),
+                    provider.getAccessKey(),
                     Integer.parseInt(getSeleniumPort(feature)),
                     null,
                     options,
@@ -177,7 +179,12 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
     private String getSauceConnectOptions(AgentRunningBuild runningBuild, AgentBuildFeature feature) {
         String options = feature.getParameters().get(Constants.SAUCE_CONNECT_OPTIONS);
         String agentName = runningBuild.getAgentConfiguration().getName();
-        SauceREST sauceREST = getSauceREST(feature, agentName);
+        ParametersProvider provider = getParametersProvider(feature, agentName);
+        SauceREST sauceREST = getSauceREST(
+            provider.getAccessKey(),
+            provider.getUsername(),
+            provider.getDataCenter()
+        );
 
         if (options == null || options.equals("")) {
             //default tunnel identifier to teamcity-%teamcity.agent.name%
@@ -246,9 +253,10 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
     private void populateEnvironmentVariables(AgentRunningBuild runningBuild, AgentBuildFeature feature) {
         logInfo(runningBuild, "Populating environment variables");
         String agentName = runningBuild.getAgentConfiguration().getName();
-        String userName = getUsername(feature, agentName);
-        String apiKey = getAccessKey(feature, agentName);
-        String dataCenter = getDataCenter(feature, agentName);
+        ParametersProvider provider = getParametersProvider(feature, agentName);
+        String userName = provider.getUsername();
+        String apiKey = provider.getAccessKey();
+        String dataCenter = provider.getDataCenter();
 
         String[] selectedBrowsers = getSelectedBrowsers(runningBuild, feature);
         if (selectedBrowsers.length == 0) {
@@ -339,30 +347,6 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
         }
     }
 
-    private String getAccessKey(AgentBuildFeature feature, String agentName) {
-        ParametersProvider provider = new ParametersProvider(feature.getParameters(), agentName);
-        return provider.getAccessKey();
-    }
-
-    private String getUsername(AgentBuildFeature feature, String agentName) {
-        ParametersProvider provider = new ParametersProvider(feature.getParameters(), agentName);
-        return provider.getUsername();
-    }
-
-    private String getDataCenter(AgentBuildFeature feature, String agentName) {
-        ParametersProvider provider = new ParametersProvider(feature.getParameters(), agentName);
-        return provider.getDataCenter();
-    }
-
-    protected SauceREST getSauceREST(AgentBuildFeature feature, String agentName) {
-        ParametersProvider provider = new ParametersProvider(feature.getParameters(), agentName);
-
-        return new SauceREST(
-            provider.getAccessKey(),
-            provider.getUsername(),
-            provider.getDataCenter()
-        );
-    }
     /**
      * Generates a String that represents the Sauce OnDemand driver URL. This is used by the
      * <a href="http://selenium-client-factory.infradna.com/">selenium-client-factory</a> library to instantiate the Sauce-specific drivers.
@@ -411,5 +395,14 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
         } else {
             return new String[]{};
         }
+    }
+
+    private SauceREST getSauceREST(String username, String accessKey, String dataCenter) {
+        return new SauceREST(username,  accessKey, dataCenter);
+    }
+
+    @NotNull
+    private ParametersProvider getParametersProvider(AgentBuildFeature feature, String agentName) {
+        return new ParametersProvider(feature.getParameters(), agentName);
     }
 }
