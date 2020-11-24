@@ -336,27 +336,27 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
     }
 
     private String getAccessKey(AgentBuildFeature feature) {
-        return feature.getParameters().get(Constants.SAUCE_PLUGIN_ACCESS_KEY);
+        ParametersProvider provider = new ParametersProvider(feature.getParameters());
+        return provider.getAccessKey();
     }
 
     private String getUsername(AgentBuildFeature feature) {
-        return feature.getParameters().get(Constants.SAUCE_USER_ID_KEY);
+        ParametersProvider provider = new ParametersProvider(feature.getParameters());
+        return provider.getUsername();
     }
 
     private String getDataCenter(AgentBuildFeature feature) {
-        return feature.getParameters().get(Constants.SAUCE_PLUGIN_DATA_CENTER);
+        ParametersProvider provider = new ParametersProvider(feature.getParameters());
+        return provider.getDataCenter();
     }
 
     protected SauceREST getSauceREST(AgentBuildFeature feature) {
-        String dataCenter = feature.getParameters().get(Constants.SAUCE_PLUGIN_DATA_CENTER);
-        if (dataCenter == null || dataCenter == "") {
-            dataCenter = "US";
-        }
+        ParametersProvider provider = new ParametersProvider(feature.getParameters());
 
         return new SauceREST(
-            feature.getParameters().get(Constants.SAUCE_PLUGIN_ACCESS_KEY),
-            feature.getParameters().get(Constants.SAUCE_USER_ID_KEY),
-            dataCenter
+            provider.getAccessKey(),
+            provider.getUsername(),
+            provider.getDataCenter()
         );
     }
     /**

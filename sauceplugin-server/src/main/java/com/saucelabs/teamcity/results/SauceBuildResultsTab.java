@@ -3,6 +3,7 @@ package com.saucelabs.teamcity.results;
 import com.saucelabs.ci.JobInformation;
 import com.saucelabs.saucerest.SauceREST;
 import com.saucelabs.teamcity.Constants;
+import com.saucelabs.teamcity.ParametersProvider;
 import jetbrains.buildServer.serverSide.BuildsManager;
 import jetbrains.buildServer.serverSide.SBuild;
 import jetbrains.buildServer.serverSide.SBuildFeatureDescriptor;
@@ -87,9 +88,10 @@ public class SauceBuildResultsTab extends BuildTab {
         if (sauceBuildFeature == null) {
             return null;
         }
-        String username = sauceBuildFeature.getParameters().get(Constants.SAUCE_USER_ID_KEY);
-        String accessKey = sauceBuildFeature.getParameters().get(Constants.SAUCE_PLUGIN_ACCESS_KEY);
-        String dataCenter = sauceBuildFeature.getParameters().get(Constants.SAUCE_PLUGIN_DATA_CENTER);
+        ParametersProvider provider = new ParametersProvider(sauceBuildFeature.getParameters());
+        String username = provider.getUsername();
+        String accessKey = provider.getAccessKey();
+        String dataCenter = provider.getAccessKey();
         String buildNumber = build.getBuildTypeExternalId() + build.getBuildNumber();
         SauceREST sauceREST = getSauceREST(username, accessKey, dataCenter);
 
@@ -194,7 +196,7 @@ public class SauceBuildResultsTab extends BuildTab {
             url = "https://app.eu-central-1.saucelabs.com";
         }
         if (dataCenter.equals("US_EAST")) {
-            url = "https://https://app.us-east-1.saucelabs.com";
+            url = "https://app.us-east-1.saucelabs.com";
         }
         return url;
     } 
