@@ -8,6 +8,7 @@ import java.util.Map;
 
 class ParametersProviderTest {
     Map<String, String> parametersMap;
+    String agentName = "Agent Name";
 
     @BeforeEach
     void beforeEach() {
@@ -20,25 +21,33 @@ class ParametersProviderTest {
 
     @Test
     public void testGetUsernameWhenSet() {
-        ParametersProvider provider = new ParametersProvider(parametersMap);
+        ParametersProvider provider = new ParametersProvider(parametersMap, agentName);
         Assertions.assertEquals(provider.getUsername(), "sauce_user_id_key");
     }
 
     @Test
+    public void testGetAgentUsernameWhenTeamcityAgentNamePropertySet() {
+        parametersMap.put(Constants.SAUCE_USER_ID_KEY, ParametersProvider.TEAMCITY_AGENT_NAME);
+        ParametersProvider provider = new ParametersProvider(parametersMap, agentName);
+        Assertions.assertEquals(provider.getUsername(), agentName);
+    }
+
+    @Test
     public void testGetAccessKeyWhenSet() {
-        ParametersProvider provider = new ParametersProvider(parametersMap);
+        ParametersProvider provider = new ParametersProvider(parametersMap, agentName);
         Assertions.assertEquals(provider.getAccessKey(), "sauce_plugin_access_key");
     }
 
     @Test
     public void testGetDataCenterWhenSet() {
-        ParametersProvider provider = new ParametersProvider(parametersMap);
+        ParametersProvider provider = new ParametersProvider(parametersMap, agentName);
         Assertions.assertEquals(provider.getDataCenter(), "EU");
     }
 
     @Test
     public void testGetDefaultDataCenterWhenNotSet() {
-        ParametersProvider provider = new ParametersProvider(new HashMap<String, String>());
+        Map<String, String> emptyParametersMap = new HashMap<String, String>();
+        ParametersProvider provider = new ParametersProvider(emptyParametersMap, agentName);
         Assertions.assertEquals(provider.getDataCenter(), ParametersProvider.SAUCE_PLUGIN_DEFAULT_DATA_CENTER);
     }
 }

@@ -74,16 +74,17 @@ public class SauceServerAdapter extends BuildServerAdapter {
      */
     private void storeBuildNumberInSauce(SRunningBuild build, String sessionId) {
         Collection<SBuildFeatureDescriptor> features = build.getBuildType().getBuildFeatures();
+        String agentName = build.getAgentName();
         if (features.isEmpty()) return;
         for (SBuildFeatureDescriptor feature : features) {
             if (feature.getType().equals("sauce")) {
-                SauceREST sauceREST = new SauceREST(getUsername(feature), getAccessKey(feature), getDataCenter(feature));
+                SauceREST sauceREST = new SauceREST(getUsername(feature, agentName), getAccessKey(feature, agentName), getDataCenter(feature, agentName));
                 Map<String, Object> updates = new HashMap<String, Object>();
                 try {
                     String json = sauceREST.getJobInfo(sessionId);
                     JSONObject jsonObject = (JSONObject) new JSONParser().parse(json);
                     String buildNumber = build.getBuildTypeExternalId() + build.getBuildNumber();
-                    logger.info("Setting build number " + buildNumber + " for job " + sessionId + " user: " + getUsername(feature));
+                    logger.info("Setting build number " + buildNumber + " for job " + sessionId + " user: " + getUsername(feature, agentName));
                     updates.put("build", buildNumber);
                     if (jsonObject.get("passed") == null || jsonObject.get("passed").equals("")) {
                         if (build.getStatusDescriptor().getStatus().isSuccessful()) {
@@ -95,24 +96,24 @@ public class SauceServerAdapter extends BuildServerAdapter {
 
                     sauceREST.updateJobInfo(sessionId, updates);
                 } catch (org.json.simple.parser.ParseException e) {
-                    logger.error("Failed to parse JSON for session id: " + sessionId + " user: " + getUsername(feature), e);
+                    logger.error("Failed to parse JSON for session id: " + sessionId + " user: " + getUsername(feature, agentName), e);
                 }
             }
         }
     }
 
-    private String getAccessKey(SBuildFeatureDescriptor feature) {
-        ParametersProvider provider = new ParametersProvider(feature.getParameters());
+    private String getAccessKey(SBuildFeatureDescriptor feature, String agentName) {
+        ParametersProvider provider = new ParametersProvider(feature.getParameters(), agentName);
         return provider.getAccessKey();
     }
 
-    private String getUsername(SBuildFeatureDescriptor feature) {
-        ParametersProvider provider = new ParametersProvider(feature.getParameters());
+    private String getUsername(SBuildFeatureDescriptor feature, String agentName) {
+        ParametersProvider provider = new ParametersProvider(feature.getParameters(), agentName);
         return provider.getUsername();
     }
 
-    private String getDataCenter(SBuildFeatureDescriptor feature) {
-        ParametersProvider provider = new ParametersProvider(feature.getParameters());
+    private String getDataCenter(SBuildFeatureDescriptor feature, String agentName) {
+        ParametersProvider provider = new ParametersProvider(feature.getParameters(), agentName);
         return provider.getDataCenter();
     } 
 }
