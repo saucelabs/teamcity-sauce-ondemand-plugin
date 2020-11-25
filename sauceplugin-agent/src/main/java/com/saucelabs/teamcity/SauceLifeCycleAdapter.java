@@ -83,6 +83,8 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
     public void beforeBuildFinish(@NotNull final AgentRunningBuild build, @NotNull BuildFinishedStatus buildStatus) {
         super.beforeBuildFinish(build, buildStatus);
 
+        String agentName = build.getAgentConfiguration().getName();
+
         Collection<AgentBuildFeature> features = build.getBuildFeaturesOfType("sauce");
         if (features.isEmpty()) return;
         for (AgentBuildFeature feature : features) {
@@ -96,7 +98,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
                     }
                 };
 
-                sauceFourTunnelManager.closeTunnelsForPlan(getUsername(feature), options, printStream);
+                sauceFourTunnelManager.closeTunnelsForPlan(getUsername(feature, agentName), options, printStream);
             }
         }
     }
@@ -136,6 +138,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
      * @param feature      contains the Sauce information set by the user within the build configuration
      */
     private void startSauceConnect(final AgentRunningBuild runningBuild, AgentBuildFeature feature) {
+        String agentName = runningBuild.getAgentConfiguration().getName();
         try {
             logInfo(runningBuild, "Starting Sauce Connect");
             String options = getSauceConnectOptions(runningBuild, feature);
@@ -152,8 +155,8 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
             ((SauceConnectFourManager) sauceFourTunnelManager).setUseLatestSauceConnect(shouldUseLatestSauceConnect(feature));
 
             sauceFourTunnelManager.openConnection(
-                    getUsername(feature),
-                    getAccessKey(feature),
+                    getUsername(feature, agentName),
+                    getAccessKey(feature, agentName),
                     Integer.parseInt(getSeleniumPort(feature)),
                     null,
                     options,
@@ -174,7 +177,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
 
     private String getSauceConnectOptions(AgentRunningBuild runningBuild, AgentBuildFeature feature) {
         String options = feature.getParameters().get(Constants.SAUCE_CONNECT_OPTIONS);
-        SauceREST sauceREST = getSauceREST(feature);
+        SauceREST sauceREST = getSauceREST(feature, runningBuild.getAgentConfiguration().getName());
 
         if (options == null || options.equals("")) {
             //default tunnel identifier to teamcity-%teamcity.agent.name%
@@ -241,10 +244,11 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
      * @param feature contains the Sauce information set by the user within the build configuration
      */
     private void populateEnvironmentVariables(AgentRunningBuild runningBuild, AgentBuildFeature feature) {
+        String agentName = runningBuild.getAgentConfiguration().getName();
         logInfo(runningBuild, "Populating environment variables");
-        String userName = getUsername(feature);
-        String apiKey = getAccessKey(feature);
-        String dataCenter = getDataCenter(feature);
+        String userName = getUsername(feature, agentName);
+        String apiKey = getAccessKey(feature, agentName);
+        String dataCenter = getDataCenter(feature, agentName);
 
         String[] selectedBrowsers = getSelectedBrowsers(runningBuild, feature);
         if (selectedBrowsers.length == 0) {
@@ -335,23 +339,23 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
         }
     }
 
-    private String getAccessKey(AgentBuildFeature feature) {
-        ParametersProvider provider = new ParametersProvider(feature.getParameters());
+    private String getAccessKey(AgentBuildFeature feature, String agentName) {
+        ParametersProvider provider = new ParametersProvider(feature.getParameters(), agentName);
         return provider.getAccessKey();
     }
 
-    private String getUsername(AgentBuildFeature feature) {
-        ParametersProvider provider = new ParametersProvider(feature.getParameters());
+    private String getUsername(AgentBuildFeature feature, String agentName) {
+        ParametersProvider provider = new ParametersProvider(feature.getParameters(), agentName);
         return provider.getUsername();
     }
 
-    private String getDataCenter(AgentBuildFeature feature) {
-        ParametersProvider provider = new ParametersProvider(feature.getParameters());
+    private String getDataCenter(AgentBuildFeature feature, String agentName) {
+        ParametersProvider provider = new ParametersProvider(feature.getParameters(), agentName);
         return provider.getDataCenter();
     }
 
-    protected SauceREST getSauceREST(AgentBuildFeature feature) {
-        ParametersProvider provider = new ParametersProvider(feature.getParameters());
+    protected SauceREST getSauceREST(AgentBuildFeature feature, String agentName) {
+        ParametersProvider provider = new ParametersProvider(feature.getParameters(), agentName);
 
         return new SauceREST(
             provider.getAccessKey(),
