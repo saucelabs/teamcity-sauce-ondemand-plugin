@@ -88,7 +88,8 @@ public class SauceBuildResultsTab extends BuildTab {
         if (sauceBuildFeature == null) {
             return null;
         }
-        ParametersProvider provider = new ParametersProvider(sauceBuildFeature.getParameters());
+        String agentName = build.getAgentName();
+        ParametersProvider provider = new ParametersProvider(sauceBuildFeature.getParameters(), agentName);
         String username = provider.getUsername();
         String accessKey = provider.getAccessKey();
         String dataCenter = provider.getAccessKey();
