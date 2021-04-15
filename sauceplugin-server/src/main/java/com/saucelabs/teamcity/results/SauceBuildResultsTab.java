@@ -92,7 +92,7 @@ public class SauceBuildResultsTab extends BuildTab {
         ParametersProvider provider = new ParametersProvider(sauceBuildFeature.getParameters(), agentName);
         String username = provider.getUsername();
         String accessKey = provider.getAccessKey();
-        String dataCenter = provider.getAccessKey();
+        String dataCenter = provider.getDataCenter();
         String buildNumber = build.getBuildTypeExternalId() + build.getBuildNumber();
         SauceREST sauceREST = getSauceREST(username, accessKey, dataCenter);
 
