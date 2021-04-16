@@ -49,7 +49,7 @@
                 <replacements>
                     <replacement>
                         <token>@Version@</token>
-                        <value>${parent.version}</value>
+                        <value>${project.parent.version}</value>
                     </replacement>
                     <replacement>
                         <token>@VendorName@</token>
@@ -87,7 +87,7 @@
                   <goal>single</goal>
                 </goals>
                 <configuration>
-                  <finalName>sauceplugin-${parent.version}</finalName>
+                  <finalName>sauceplugin-${project.parent.version}</finalName>
                   <outputDirectory>${project.parent.build.directory}</outputDirectory>
                   <appendAssemblyId>false</appendAssemblyId>
                   <descriptors>
