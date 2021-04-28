@@ -358,8 +358,8 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
         ParametersProvider provider = new ParametersProvider(feature.getParameters(), agentName);
 
         return new SauceREST(
-            provider.getAccessKey(),
             provider.getUsername(),
+            provider.getAccessKey(),
             provider.getDataCenter()
         );
     }
