@@ -47,6 +47,17 @@ public class SauceServerAdapter extends BuildServerAdapter {
     public void buildFinished(SRunningBuild build) {
         super.buildFinished(build);
 
+        associateTeamcityBuildNumberWithSauceJob(build);
+    }
+
+    @Override
+    public void buildInterrupted(SRunningBuild build) {
+        super.buildInterrupted(build);
+
+        associateTeamcityBuildNumberWithSauceJob(build);
+    }
+
+    private void associateTeamcityBuildNumberWithSauceJob(SRunningBuild build) {
         Iterator<LogMessage> iterator = build.getBuildLog().getMessagesIterator();
         while (iterator.hasNext()) {
             LogMessage logMessage = iterator.next();
