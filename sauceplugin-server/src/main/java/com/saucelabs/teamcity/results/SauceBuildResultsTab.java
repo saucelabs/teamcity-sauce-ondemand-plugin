@@ -97,13 +97,13 @@ public class SauceBuildResultsTab extends BuildTab {
         SauceREST sauceREST = getSauceREST(username, accessKey, dataCenter);
 
         logger.info("Retrieving Sauce jobs for " + buildNumber + " user: " + username);
-        String jsonResponse = sauceREST.getBuildFullJobs(buildNumber); // FIXME - limit 200);
+        String jsonResponse = sauceREST.getBuildJobs(buildNumber); // FIXME - limit 200);
         JSONObject job = new JSONObject(jsonResponse);
         JSONArray jobResults = job.getJSONArray("jobs");
         if (jobResults.length() == 0) {
             //try query using the build number
             logger.info("Retrieving Sauce jobs for " + build.getBuildNumber() + " user: " + username);
-            jsonResponse = sauceREST.getBuildFullJobs(build.getBuildNumber()); // FIXME - limit 200);
+            jsonResponse = sauceREST.getBuildJobs(build.getBuildNumber()); // FIXME - limit 200);
             job = new JSONObject(jsonResponse);
             jobResults = job.getJSONArray("jobs");
         }
