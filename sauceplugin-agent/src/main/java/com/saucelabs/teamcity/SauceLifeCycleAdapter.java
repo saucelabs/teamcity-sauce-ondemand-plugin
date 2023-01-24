@@ -142,7 +142,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
         try {
             logInfo(runningBuild, "Starting Sauce Connect");
             String options = getSauceConnectOptions(runningBuild, feature);
-            addSharedEnvironmentVariable(runningBuild, Constants.TUNNEL_IDENTIFIER, AbstractSauceTunnelManager.getTunnelIdentifier(options, "default"));
+            addSharedEnvironmentVariable(runningBuild, Constants.TUNNEL_IDENTIFIER, AbstractSauceTunnelManager.getTunnelName(options, "default"));
 
             PrintStream printStream = new PrintStream(new NullOutputStream()) {
                 @Override
