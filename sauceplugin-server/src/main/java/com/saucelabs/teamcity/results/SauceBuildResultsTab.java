@@ -2,6 +2,7 @@ package com.saucelabs.teamcity.results;
 
 import com.saucelabs.ci.JobInformation;
 import com.saucelabs.saucerest.SauceREST;
+import com.saucelabs.saucerest.JobSource;
 import com.saucelabs.teamcity.Constants;
 import com.saucelabs.teamcity.ParametersProvider;
 import jetbrains.buildServer.serverSide.BuildsManager;
@@ -97,13 +98,13 @@ public class SauceBuildResultsTab extends BuildTab {
         SauceREST sauceREST = getSauceREST(username, accessKey, dataCenter);
 
         logger.info("Retrieving Sauce jobs for " + buildNumber + " user: " + username);
-        String jsonResponse = sauceREST.getBuildJobs(buildNumber); // FIXME - limit 200);
+        String jsonResponse = sauceREST.getBuildJobs(JobSource.VDC, buildNumber);
         JSONObject job = new JSONObject(jsonResponse);
         JSONArray jobResults = job.getJSONArray("jobs");
         if (jobResults.length() == 0) {
             //try query using the build number
             logger.info("Retrieving Sauce jobs for " + build.getBuildNumber() + " user: " + username);
-            jsonResponse = sauceREST.getBuildJobs(build.getBuildNumber()); // FIXME - limit 200);
+            jsonResponse = sauceREST.getBuildJobs(JobSource.VDC, build.getBuildNumber());
             job = new JSONObject(jsonResponse);
             jobResults = job.getJSONArray("jobs");
         }
