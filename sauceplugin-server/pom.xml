@@ -16,7 +16,7 @@
     <dependency>
       <groupId>com.saucelabs.teamcity</groupId>
       <artifactId>sauceplugin-common</artifactId>
-      <version>1.51</version>
+      <version>1.53</version>
       <scope>compile</scope>
     </dependency>
 
