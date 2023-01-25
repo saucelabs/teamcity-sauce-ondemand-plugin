@@ -2,6 +2,7 @@ package com.saucelabs.teamcity.results;
 
 import com.saucelabs.ci.JobInformation;
 import com.saucelabs.saucerest.SauceREST;
+import com.saucelabs.saucerest.JobSource;
 import com.saucelabs.teamcity.Constants;
 import com.saucelabs.teamcity.ParametersProvider;
 import jetbrains.buildServer.serverSide.BuildsManager;
@@ -71,6 +72,55 @@ public class SauceBuildResultsTab extends BuildTab {
     }
 
     /**
+     * Invokes the Sauce REST API to retrieve the build information.
+     * @param sauceREST    Sauce Rest object/credentials to use
+     * @param buildNumber  The build name on Sauce
+     * @return Teamcity Build information
+     * @throws JSONException Unable to parse json
+     */
+    public String retrieveBuildInformationFromSauce(
+            SauceREST sauceREST, String buildNumber)
+            throws JSONException {
+        logger.info("Performing Sauce REST retrieve results for " + buildNumber);
+
+        String response;
+        try {
+            response = sauceREST.getBuildsByName(JobSource.VDC, buildNumber, 1);
+        } catch (java.io.UnsupportedEncodingException e) {
+            return "";
+        }
+        if ("".equals(response)) {
+            return "";
+        }
+        JSONObject jsonResponse = new JSONObject(response);
+        JSONArray jsonBuilds = jsonResponse.getJSONArray("builds");
+        if (jsonBuilds == null || jsonBuilds.length() == 0) {
+            logger.error("Unable to find build for name: `" + buildNumber + "`");
+            return "";
+        }
+        JSONObject buildData = jsonBuilds.getJSONObject(0);
+        String buildId = buildData.getString("id");
+        return buildId;
+    }
+
+    protected static List<String> getJobIdsForBuild(SauceREST sauceREST, String buildId) {
+        List<String> jobIds = new ArrayList<String>();
+        String response = sauceREST.getBuildJobs(JobSource.VDC, buildId);
+        JSONObject jsonResponse = new JSONObject(response);
+        JSONArray jsonBuildJobs = jsonResponse.getJSONArray("jobs");
+        if (jsonBuildJobs == null || jsonBuildJobs.length() == 0) {
+            logger.error("Build without jobs id=`" + buildId + "`");
+            return jobIds;
+        }
+        for (int i = 0; i < jsonBuildJobs.length(); i++) {
+            JSONObject jobData = jsonBuildJobs.getJSONObject(i);
+            String jobId = jobData.getString("id");
+            jobIds.add(jobId);
+        }
+        return jobIds;
+    }
+
+    /**
      * Retrieve the list of Sauce jobs recorded against the TeamCity build.
      *
      * @param build
@@ -93,29 +143,31 @@ public class SauceBuildResultsTab extends BuildTab {
         String username = provider.getUsername();
         String accessKey = provider.getAccessKey();
         String dataCenter = provider.getDataCenter();
-        String buildNumber = build.getBuildTypeExternalId() + build.getBuildNumber();
+        String buildNumber = build.getBuildNumber();
         SauceREST sauceREST = getSauceREST(username, accessKey, dataCenter);
 
-        logger.info("Retrieving Sauce jobs for " + buildNumber + " user: " + username);
-        String jsonResponse = sauceREST.getBuildFullJobs(buildNumber); // FIXME - limit 200);
-        JSONObject job = new JSONObject(jsonResponse);
-        JSONArray jobResults = job.getJSONArray("jobs");
-        if (jobResults.length() == 0) {
-            //try query using the build number
-            logger.info("Retrieving Sauce jobs for " + build.getBuildNumber() + " user: " + username);
-            jsonResponse = sauceREST.getBuildFullJobs(build.getBuildNumber()); // FIXME - limit 200);
-            job = new JSONObject(jsonResponse);
-            jobResults = job.getJSONArray("jobs");
+        String buildId = retrieveBuildInformationFromSauce(sauceREST, buildNumber);
+        
+        if (buildId == "") {
+            logger.error("Unable to find build for name: `" + buildNumber + "`");
+            return jobInformation;
         }
 
-        for (int i = 0; i < jobResults.length(); i++) {
-            //check custom data to find job that was for build
-            JSONObject jobData = jobResults.getJSONObject(i);
-            String jobId = jobData.getString("id");
-            JobInformation information = new JobInformation(jobId, calcHMAC(username, accessKey, jobId));
-            information.populateFromJson(jobData);
-            information.setLogUrl(getLogUrl(dataCenter));
-            jobInformation.add(information);
+        logger.info("Retrieving jobs for  " + buildId);
+        String response = sauceREST.getFullJobsByIds(getJobIdsForBuild(sauceREST, buildId));
+        JSONArray jsonBuildJobs = new JSONArray(response);
+        if (jsonBuildJobs.length() == 0) {
+            logger.error("Unable to get jobs for ID: `" + buildId + "`");
+        } else {
+            for (int i = 0; i < jsonBuildJobs.length(); i++) {
+                JSONObject jobData = jsonBuildJobs.getJSONObject(i);
+                String jobId = jobData.getString("id");
+
+                JobInformation information = new JobInformation(jobId, calcHMAC(username, accessKey, jobId));
+                information.populateFromJson(jobData);
+                information.setLogUrl(getLogUrl(dataCenter));
+                jobInformation.add(information);
+            }
         }
 
         //the list of results retrieved from the Sauce REST API is last-first, so reverse the list
