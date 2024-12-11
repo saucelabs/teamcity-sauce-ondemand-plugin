@@ -9,7 +9,7 @@
     <artifactId>sauceplugin-common</artifactId>
     <packaging>jar</packaging>
     <properties>
-      <main.basedir>${project.parent.basedir}</main.basedir>
+        <main.basedir>${basedir}/../</main.basedir>
       <junit.version>5.8.0-M1</junit.version>
     </properties>
     <dependencies>
