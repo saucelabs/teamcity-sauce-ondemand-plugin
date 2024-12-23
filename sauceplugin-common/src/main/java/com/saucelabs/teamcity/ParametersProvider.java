@@ -24,7 +24,9 @@ public class ParametersProvider {
         return username;
     }
 
-    public String getAccessKey() { return this.parameters.get(Constants.SAUCE_PLUGIN_ACCESS_KEY); }
+    public String getAccessKey() {
+        return this.parameters.get(Constants.SAUCE_PLUGIN_ACCESS_KEY);
+    }
 
     public String getDataCenter() {
         String dataCenter = this.parameters.get(Constants.SAUCE_PLUGIN_DATA_CENTER);

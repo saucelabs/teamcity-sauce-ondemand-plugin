@@ -51,9 +51,9 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
     }
 
     /**
-     * @param agentDispatcher ???
-     * @param sauceBrowserFactory    Singleton instance used to retrieve browser information supported by Sauce, populated by Spring.
-     * @param sauceConnectManager    Singleton Sauce Connect Manager instance, populated by Spring.
+     * @param agentDispatcher     ???
+     * @param sauceBrowserFactory Singleton instance used to retrieve browser information supported by Sauce, populated by Spring.
+     * @param sauceConnectManager Singleton Sauce Connect Manager instance, populated by Spring.
      */
     public SauceLifeCycleAdapter(
             @NotNull EventDispatcher<AgentLifeCycleListener> agentDispatcher,
@@ -232,7 +232,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
 
     /**
      * @param runningBuild
-     * @param feature contains the Sauce information set by the user within the build configuration
+     * @param feature      contains the Sauce information set by the user within the build configuration
      */
     private void populateEnvironmentVariables(AgentRunningBuild runningBuild, AgentBuildFeature feature) {
         String agentName = runningBuild.getAgentConfiguration().getName();
@@ -349,19 +349,20 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
         ParametersProvider provider = new ParametersProvider(feature.getParameters(), agentName);
         HttpClientConfig config = HttpClientConfig.defaultConfig().interceptor(new UserAgentInterceptor());
         return new SauceREST(
-            provider.getUsername(),
-            provider.getAccessKey(),
-            provider.getSauceRESTDataCenter(),
-            config
+                provider.getUsername(),
+                provider.getAccessKey(),
+                provider.getSauceRESTDataCenter(),
+                config
         );
     }
+
     /**
      * Generates a String that represents the Sauce OnDemand driver URL. This is used by the
      * <a href="http://selenium-client-factory.infradna.com/">selenium-client-factory</a> library to instantiate the Sauce-specific drivers.
      *
      * @param username String representing Sauce Username
-     * @param apiKey String representing Sauce API Key
-     * @param feature Plugin configuration
+     * @param apiKey   String representing Sauce API Key
+     * @param feature  Plugin configuration
      * @return String representing the Sauce OnDemand driver URI
      */
     protected String getSodDriverUri(String username, String apiKey, Browser browser, AgentBuildFeature feature) {
@@ -380,9 +381,8 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
     }
 
     /**
-     *
      * @param runningBuild
-     * @param feature contains the Sauce information set by the user within the build configuration
+     * @param feature      contains the Sauce information set by the user within the build configuration
      * @return
      */
     private String[] getSelectedBrowsers(AgentRunningBuild runningBuild, AgentBuildFeature feature) {

@@ -79,8 +79,9 @@ public class SauceBuildResultsTab extends BuildTab {
 
     /**
      * Invokes the Sauce REST API to retrieve the build information.
-     * @param sauceREST    Sauce Rest object/credentials to use
-     * @param buildNumber  The build name on Sauce
+     *
+     * @param sauceREST   Sauce Rest object/credentials to use
+     * @param buildNumber The build name on Sauce
      * @return Teamcity Build information
      * @throws JSONException Unable to parse json
      */
@@ -139,7 +140,7 @@ public class SauceBuildResultsTab extends BuildTab {
         SauceREST sauceREST = new SauceREST(username, accessKey, dataCenter, config);
 
         String buildId = retrieveBuildInformationFromSauce(sauceREST, buildNumber);
-        
+
         if (buildId == "") {
             logger.error("Unable to find build for name: `" + buildNumber + "`");
             return jobInformation;
@@ -228,8 +229,8 @@ public class SauceBuildResultsTab extends BuildTab {
 
     private String getLogUrl(DataCenter dataCenter) {
         if (dataCenter == DataCenter.EU_CENTRAL) {
-            return"https://app.eu-central-1.saucelabs.com";
+            return "https://app.eu-central-1.saucelabs.com";
         }
         return "https://app.saucelabs.com";
-    } 
+    }
 }

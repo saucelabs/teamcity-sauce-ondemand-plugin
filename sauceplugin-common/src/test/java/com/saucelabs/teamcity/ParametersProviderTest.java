@@ -13,7 +13,7 @@ class ParametersProviderTest {
 
     @BeforeEach
     void beforeEach() {
-       parametersMap  = new HashMap<String, String>() {{
+        parametersMap = new HashMap<String, String>() {{
             put(Constants.SAUCE_USER_ID_KEY, "sauce_user_id_key");
             put(Constants.SAUCE_PLUGIN_ACCESS_KEY, "sauce_plugin_access_key");
             put(Constants.SAUCE_PLUGIN_DATA_CENTER, "EU");
