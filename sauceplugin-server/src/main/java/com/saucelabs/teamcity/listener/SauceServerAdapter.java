@@ -2,8 +2,10 @@ package com.saucelabs.teamcity.listener;
 
 import com.saucelabs.saucerest.DataCenter;
 import com.saucelabs.saucerest.SauceREST;
+import com.saucelabs.saucerest.api.HttpClientConfig;
 import com.saucelabs.saucerest.model.jobs.UpdateJobParameter;
 import com.saucelabs.teamcity.ParametersProvider;
+import com.saucelabs.teamcity.UserAgentInterceptor;
 import jetbrains.buildServer.serverSide.BuildServerAdapter;
 import jetbrains.buildServer.serverSide.SBuildFeatureDescriptor;
 import jetbrains.buildServer.serverSide.SBuildServer;
@@ -39,6 +41,7 @@ public class SauceServerAdapter extends BuildServerAdapter {
     /**
      * Invoked when a build is finished.  Iterates over the build output and identifies lines which contains 'SauceOnDemandSessionID',
      * and for each line, invokes the Sauce REST API to associate the TeamCity build number with the Sauce Job.
+     *
      * @param build
      */
     @Override
@@ -67,6 +70,7 @@ public class SauceServerAdapter extends BuildServerAdapter {
     /**
      * Invokes the Sauce REST API to store the TeamCity build number and pass/fail status within
      * Sauce.
+     *
      * @param build
      * @param sessionId
      */
@@ -76,7 +80,13 @@ public class SauceServerAdapter extends BuildServerAdapter {
         if (features.isEmpty()) return;
         for (SBuildFeatureDescriptor feature : features) {
             if (feature.getType().equals("sauce")) {
-                SauceREST sauceREST = new SauceREST(getUsername(feature, agentName), getAccessKey(feature, agentName), getDataCenter(feature, agentName));
+                HttpClientConfig config = HttpClientConfig.defaultConfig().interceptor(new UserAgentInterceptor());
+                SauceREST sauceREST = new SauceREST(
+                        getUsername(feature, agentName),
+                        getAccessKey(feature, agentName),
+                        getDataCenter(feature, agentName),
+                        config
+                );
 
                 try {
                     String buildNumber = build.getBuildTypeExternalId() + build.getBuildNumber();

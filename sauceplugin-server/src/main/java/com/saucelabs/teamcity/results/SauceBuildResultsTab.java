@@ -4,10 +4,12 @@ import com.saucelabs.ci.JobInformation;
 import com.saucelabs.saucerest.DataCenter;
 import com.saucelabs.saucerest.SauceREST;
 import com.saucelabs.saucerest.JobSource;
+import com.saucelabs.saucerest.api.HttpClientConfig;
 import com.saucelabs.saucerest.model.builds.*;
 import com.saucelabs.saucerest.model.jobs.Job;
 import com.saucelabs.teamcity.Constants;
 import com.saucelabs.teamcity.ParametersProvider;
+import com.saucelabs.teamcity.UserAgentInterceptor;
 import jetbrains.buildServer.serverSide.BuildsManager;
 import jetbrains.buildServer.serverSide.SBuild;
 import jetbrains.buildServer.serverSide.SBuildFeatureDescriptor;
@@ -133,7 +135,8 @@ public class SauceBuildResultsTab extends BuildTab {
         String accessKey = provider.getAccessKey();
         DataCenter dataCenter = provider.getSauceRESTDataCenter();
         String buildNumber = build.getBuildTypeExternalId() + build.getBuildNumber();
-        SauceREST sauceREST = new SauceREST(username, accessKey, dataCenter);
+        HttpClientConfig config = HttpClientConfig.defaultConfig().interceptor(new UserAgentInterceptor());
+        SauceREST sauceREST = new SauceREST(username, accessKey, dataCenter, config);
 
         String buildId = retrieveBuildInformationFromSauce(sauceREST, buildNumber);
         

@@ -5,6 +5,7 @@ import com.saucelabs.ci.BrowserFactory;
 import com.saucelabs.ci.sauceconnect.AbstractSauceTunnelManager;
 import com.saucelabs.ci.sauceconnect.SauceConnectFourManager;
 import com.saucelabs.saucerest.SauceREST;
+import com.saucelabs.saucerest.api.HttpClientConfig;
 import jetbrains.buildServer.BuildProblemData;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.log.Loggers;
@@ -346,11 +347,12 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
 
     protected SauceREST getSauceREST(AgentBuildFeature feature, String agentName) {
         ParametersProvider provider = new ParametersProvider(feature.getParameters(), agentName);
-
+        HttpClientConfig config = HttpClientConfig.defaultConfig().interceptor(new UserAgentInterceptor());
         return new SauceREST(
             provider.getUsername(),
             provider.getAccessKey(),
-            provider.getSauceRESTDataCenter()
+            provider.getSauceRESTDataCenter(),
+            config
         );
     }
     /**
