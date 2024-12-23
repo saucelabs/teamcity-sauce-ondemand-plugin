@@ -45,14 +45,14 @@
                     <execution>
                         <phase>generate-sources</phase>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <filterset id="filters">
                                     <filter token="VERSION" value="${project.version}" />
                                 </filterset>
                                 <copy preservelastmodified="true" file="${main.basedir}/src/main/resources/BuildUtils.java.template" tofile="${basedir}/src/main/java/com/saucelabs/teamcity/BuildUtils.java" overwrite="true">
                                     <filterset refid="filters" />
                                 </copy>
-                            </tasks>
+                            </target>
                         </configuration>
                         <goals>
                             <goal>run</goal>
