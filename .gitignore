@@ -2,3 +2,7 @@ target/
 *.iml
 src/main/java/com/saucelabs/teamcity/BuildUtils.java
 .idea/
+build/src/main/java/com/saucelabs/teamcity/BuildUtils.java
+sauceplugin-agent/src/main/java/com/saucelabs/teamcity/BuildUtils.java
+sauceplugin-common/src/main/java/com/saucelabs/teamcity/BuildUtils.java
+sauceplugin-server/src/main/java/com/saucelabs/teamcity/BuildUtils.java
