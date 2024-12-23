@@ -1,8 +1,11 @@
 package com.saucelabs.teamcity.results;
 
 import com.saucelabs.ci.JobInformation;
+import com.saucelabs.saucerest.DataCenter;
 import com.saucelabs.saucerest.SauceREST;
 import com.saucelabs.saucerest.JobSource;
+import com.saucelabs.saucerest.model.builds.*;
+import com.saucelabs.saucerest.model.jobs.Job;
 import com.saucelabs.teamcity.Constants;
 import com.saucelabs.teamcity.ParametersProvider;
 import jetbrains.buildServer.serverSide.BuildsManager;
@@ -27,6 +30,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Adds a Sauce-specific tab to the build results page.
@@ -41,7 +45,7 @@ public class SauceBuildResultsTab extends BuildTab {
 
     private static final String HMAC_KEY = "HMACMD5";
 
-    protected SauceBuildResultsTab(WebControllerManager manager, BuildsManager buildManager, PluginDescriptor myPluginDescriptor) {
+    public SauceBuildResultsTab(WebControllerManager manager, BuildsManager buildManager, PluginDescriptor myPluginDescriptor) {
         super("sauceBuildResults", "Sauce Labs Results", manager, buildManager, myPluginDescriptor.getPluginResourcesPath("sauceBuildResults.jsp"));
     }
 
@@ -80,44 +84,29 @@ public class SauceBuildResultsTab extends BuildTab {
      */
     public String retrieveBuildInformationFromSauce(
             SauceREST sauceREST, String buildNumber)
-            throws JSONException {
+            throws IOException {
         logger.info("Performing Sauce REST retrieve results for " + buildNumber);
 
-        String response;
-        try {
-            response = sauceREST.getBuildsByName(JobSource.VDC, buildNumber, 1);
-        } catch (java.io.UnsupportedEncodingException e) {
-            return "";
-        }
-        if ("".equals(response)) {
-            return "";
-        }
-        JSONObject jsonResponse = new JSONObject(response);
-        JSONArray jsonBuilds = jsonResponse.getJSONArray("builds");
-        if (jsonBuilds == null || jsonBuilds.length() == 0) {
+        List<Build> response = sauceREST.getBuildsEndpoint().lookupBuilds(JobSource.VDC, new LookupBuildsParameters.Builder().setName(buildNumber).setLimit(1).build());
+
+        if (response.isEmpty()) {
             logger.error("Unable to find build for name: `" + buildNumber + "`");
             return "";
         }
-        JSONObject buildData = jsonBuilds.getJSONObject(0);
-        String buildId = buildData.getString("id");
-        return buildId;
+
+        return response.get(0).id;
     }
 
-    protected static List<String> getJobIdsForBuild(SauceREST sauceREST, String buildId) {
-        List<String> jobIds = new ArrayList<String>();
-        String response = sauceREST.getBuildJobs(JobSource.VDC, buildId);
-        JSONObject jsonResponse = new JSONObject(response);
-        JSONArray jsonBuildJobs = jsonResponse.getJSONArray("jobs");
-        if (jsonBuildJobs == null || jsonBuildJobs.length() == 0) {
+    protected static List<String> getJobIdsForBuild(SauceREST sauceREST, String buildId) throws IOException {
+        JobsInBuild response = sauceREST.getBuildsEndpoint().lookupJobsForBuild(JobSource.VDC, buildId, new LookupJobsParameters.Builder().build());
+        if (response.jobs.isEmpty()) {
             logger.error("Build without jobs id=`" + buildId + "`");
-            return jobIds;
+            return new ArrayList<>();
         }
-        for (int i = 0; i < jsonBuildJobs.length(); i++) {
-            JSONObject jobData = jsonBuildJobs.getJSONObject(i);
-            String jobId = jobData.getString("id");
-            jobIds.add(jobId);
-        }
-        return jobIds;
+
+        return response.jobs.stream()
+                .map(job -> job.id)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -142,9 +131,9 @@ public class SauceBuildResultsTab extends BuildTab {
         ParametersProvider provider = new ParametersProvider(sauceBuildFeature.getParameters(), agentName);
         String username = provider.getUsername();
         String accessKey = provider.getAccessKey();
-        String dataCenter = provider.getDataCenter();
-        String buildNumber = build.getBuildNumber();
-        SauceREST sauceREST = getSauceREST(username, accessKey, dataCenter);
+        DataCenter dataCenter = provider.getSauceRESTDataCenter();
+        String buildNumber = build.getBuildTypeExternalId() + build.getBuildNumber();
+        SauceREST sauceREST = new SauceREST(username, accessKey, dataCenter);
 
         String buildId = retrieveBuildInformationFromSauce(sauceREST, buildNumber);
         
@@ -154,20 +143,17 @@ public class SauceBuildResultsTab extends BuildTab {
         }
 
         logger.info("Retrieving jobs for  " + buildId);
-        String response = sauceREST.getFullJobsByIds(getJobIdsForBuild(sauceREST, buildId));
-        JSONArray jsonBuildJobs = new JSONArray(response);
-        if (jsonBuildJobs.length() == 0) {
+        List<Job> response = sauceREST.getJobsEndpoint().getJobDetails(getJobIdsForBuild(sauceREST, buildId));
+        if (response.isEmpty()) {
             logger.error("Unable to get jobs for ID: `" + buildId + "`");
-        } else {
-            for (int i = 0; i < jsonBuildJobs.length(); i++) {
-                JSONObject jobData = jsonBuildJobs.getJSONObject(i);
-                String jobId = jobData.getString("id");
+            return jobInformation;
+        }
 
-                JobInformation information = new JobInformation(jobId, calcHMAC(username, accessKey, jobId));
-                information.populateFromJson(jobData);
-                information.setLogUrl(getLogUrl(dataCenter));
-                jobInformation.add(information);
-            }
+        for (Job job : response) {
+            JobInformation information = new JobInformation(job.id, calcHMAC(username, accessKey, job.id));
+            information.populate(job);
+            information.setLogUrl(getLogUrl(dataCenter));
+            jobInformation.add(information);
         }
 
         //the list of results retrieved from the Sauce REST API is last-first, so reverse the list
@@ -236,21 +222,11 @@ public class SauceBuildResultsTab extends BuildTab {
         byte[] hexBytes = new Hex().encode(hmacBytes);
         return new String(hexBytes, "ISO-8859-1");
     }
-    protected SauceREST getSauceREST(String username, String accessKey, String dataCenter) {
-        if (dataCenter == null || dataCenter == "") {
-            dataCenter = "US";
-        }
-        return new SauceREST(username,  accessKey, dataCenter);
-    }
 
-    private String getLogUrl(String dataCenter) {
-        String url = "https://app.saucelabs.com";
-        if (dataCenter.equals("EU")) {
-            url = "https://app.eu-central-1.saucelabs.com";
+    private String getLogUrl(DataCenter dataCenter) {
+        if (dataCenter == DataCenter.EU_CENTRAL) {
+            return"https://app.eu-central-1.saucelabs.com";
         }
-        if (dataCenter.equals("US_EAST")) {
-            url = "https://app.us-east-1.saucelabs.com";
-        }
-        return url;
+        return "https://app.saucelabs.com";
     } 
 }

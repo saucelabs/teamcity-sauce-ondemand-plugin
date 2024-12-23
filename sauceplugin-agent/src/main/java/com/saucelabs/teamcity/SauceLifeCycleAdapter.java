@@ -350,7 +350,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
         return new SauceREST(
             provider.getUsername(),
             provider.getAccessKey(),
-            provider.getDataCenter()
+            provider.getSauceRESTDataCenter()
         );
     }
     /**

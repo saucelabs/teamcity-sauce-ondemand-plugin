@@ -1,5 +1,6 @@
 package com.saucelabs.teamcity;
 
+import com.saucelabs.saucerest.DataCenter;
 import org.junit.jupiter.api.*;
 
 import java.util.HashMap;
