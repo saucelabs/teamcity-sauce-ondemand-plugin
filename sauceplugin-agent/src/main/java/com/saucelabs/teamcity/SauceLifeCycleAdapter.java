@@ -9,7 +9,6 @@ import jetbrains.buildServer.BuildProblemData;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.messages.DefaultMessagesInfo;
-import jetbrains.buildServer.messages.Status;
 import jetbrains.buildServer.util.EventDispatcher;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -18,7 +17,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,9 +31,9 @@ import java.util.Collection;
 public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
 
     /**
-     * Singleton Sauce Connect v4 manager instance, populated by Spring.
+     * Singleton Sauce Connect Manager instance, populated by Spring.
      */
-    private final SauceConnectFourManager sauceFourTunnelManager;
+    private final SauceConnectFourManager sauceConnectManager;
     /**
      * Singleton instance used to retrieve browser information supported by Sauce, populated by Spring.
      */
@@ -54,15 +52,15 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
     /**
      * @param agentDispatcher ???
      * @param sauceBrowserFactory    Singleton instance used to retrieve browser information supported by Sauce, populated by Spring.
-     * @param sauceFourTunnelManager Singleton Sauce Connect v4 manager instance, populated by Spring.
+     * @param sauceConnectManager    Singleton Sauce Connect Manager instance, populated by Spring.
      */
     public SauceLifeCycleAdapter(
             @NotNull EventDispatcher<AgentLifeCycleListener> agentDispatcher,
             BrowserFactory sauceBrowserFactory,
-            SauceConnectFourManager sauceFourTunnelManager) {
+            SauceConnectFourManager sauceConnectManager) {
         agentDispatcher.addListener(this);
         this.sauceBrowserFactory = sauceBrowserFactory;
-        this.sauceFourTunnelManager = sauceFourTunnelManager;
+        this.sauceConnectManager = sauceConnectManager;
     }
 
     /**
@@ -90,7 +88,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
                     }
                 };
 
-                sauceFourTunnelManager.closeTunnelsForPlan(getUsername(feature, agentName), options, printStream);
+                sauceConnectManager.closeTunnelsForPlan(getUsername(feature, agentName), options, printStream);
             }
         }
     }
@@ -131,22 +129,23 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
      */
     private void startSauceConnect(final AgentRunningBuild runningBuild, AgentBuildFeature feature) {
         String agentName = runningBuild.getAgentConfiguration().getName();
+
+        logInfo(runningBuild, "Starting Sauce Connect");
+        String options = getSauceConnectOptions(runningBuild, feature);
+        addSharedEnvironmentVariable(runningBuild, Constants.TUNNEL_IDENTIFIER, AbstractSauceTunnelManager.getTunnelName(options, "default"));
+
+        PrintStream printStream = new PrintStream(new NullOutputStream()) {
+            @Override
+            public void println(String x) {
+                runningBuild.getBuildLogger().logMessage(DefaultMessagesInfo.createTextMessage(x));
+            }
+        };
+
+        // set to use latest sauce if set
+        sauceConnectManager.setUseLatestSauceConnect(shouldUseLatestSauceConnect(feature));
+
         try {
-            logInfo(runningBuild, "Starting Sauce Connect");
-            String options = getSauceConnectOptions(runningBuild, feature);
-            addSharedEnvironmentVariable(runningBuild, Constants.TUNNEL_IDENTIFIER, AbstractSauceTunnelManager.getTunnelName(options, "default"));
-
-            PrintStream printStream = new PrintStream(new NullOutputStream()) {
-                @Override
-                public void println(String x) {
-                    runningBuild.getBuildLogger().logMessage(DefaultMessagesInfo.createTextMessage(x));
-                }
-            };
-
-            // set to use latest sauce if set
-            ((SauceConnectFourManager) sauceFourTunnelManager).setUseLatestSauceConnect(shouldUseLatestSauceConnect(feature));
-
-            sauceFourTunnelManager.openConnection(
+            sauceConnectManager.openConnection(
                     getUsername(feature, agentName),
                     getAccessKey(feature, agentName),
                     Integer.parseInt(getSeleniumPort(feature)),
@@ -156,8 +155,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
                     Boolean.TRUE,
                     null
             );
-
-        } catch (IOException e) {
+        } catch (Throwable e) {
             logError(runningBuild, "Error launching Sauce Connect", e);
             runningBuild.getBuildLogger().logBuildProblem(BuildProblemData.createBuildProblem(
                     "SAUCE_CONNECT",
