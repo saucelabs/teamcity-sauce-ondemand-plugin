@@ -32,14 +32,6 @@ import java.util.Collection;
  */
 public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
 
-    /*
-    static {
-        SauceREST.setExtraUserAgent("TeamCity/" + System.getProperty(
-            ServerProvidedProperties.TEAMCITY_VERSION_PROP) + " " +
-            "TeamCitySauceOnDemand-Agent/" + BuildUtils.getCurrentVersion());
-    }
-    */
-
     /**
      * Singleton Sauce Connect v4 manager instance, populated by Spring.
      */
