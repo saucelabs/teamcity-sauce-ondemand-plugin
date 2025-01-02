@@ -1,5 +1,7 @@
 package com.saucelabs.teamcity;
 
+import com.saucelabs.saucerest.DataCenter;
+
 import java.util.Map;
 
 public class ParametersProvider {
@@ -22,7 +24,9 @@ public class ParametersProvider {
         return username;
     }
 
-    public String getAccessKey() { return this.parameters.get(Constants.SAUCE_PLUGIN_ACCESS_KEY); }
+    public String getAccessKey() {
+        return this.parameters.get(Constants.SAUCE_PLUGIN_ACCESS_KEY);
+    }
 
     public String getDataCenter() {
         String dataCenter = this.parameters.get(Constants.SAUCE_PLUGIN_DATA_CENTER);
@@ -30,5 +34,25 @@ public class ParametersProvider {
             dataCenter = SAUCE_PLUGIN_DEFAULT_DATA_CENTER;
         }
         return dataCenter;
+    }
+
+    public DataCenter getSauceRESTDataCenter() {
+        String dataCenterStr = getDataCenter();
+
+        DataCenter dataCenterRest = DataCenter.fromString(dataCenterStr);
+        if (dataCenterRest != null) {
+            return dataCenterRest;
+        }
+
+        if (dataCenterStr.equals("US")) {
+            return DataCenter.US_WEST;
+        }
+
+        if (dataCenterStr.equals("EU")) {
+            return DataCenter.EU_CENTRAL;
+        }
+
+        // fallback to US
+        return DataCenter.US_WEST;
     }
 }

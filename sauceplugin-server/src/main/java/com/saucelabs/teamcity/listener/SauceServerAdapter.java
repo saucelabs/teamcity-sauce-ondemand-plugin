@@ -1,8 +1,11 @@
 package com.saucelabs.teamcity.listener;
 
+import com.saucelabs.saucerest.DataCenter;
 import com.saucelabs.saucerest.SauceREST;
-import com.saucelabs.teamcity.Constants;
+import com.saucelabs.saucerest.api.HttpClientConfig;
+import com.saucelabs.saucerest.model.jobs.UpdateJobParameter;
 import com.saucelabs.teamcity.ParametersProvider;
+import com.saucelabs.teamcity.UserAgentInterceptor;
 import jetbrains.buildServer.serverSide.BuildServerAdapter;
 import jetbrains.buildServer.serverSide.SBuildFeatureDescriptor;
 import jetbrains.buildServer.serverSide.SBuildServer;
@@ -10,13 +13,10 @@ import jetbrains.buildServer.serverSide.SRunningBuild;
 import jetbrains.buildServer.serverSide.buildLog.LogMessage;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
+import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 /**
  * Server-side adapter which invokes post-build logic.
@@ -41,6 +41,7 @@ public class SauceServerAdapter extends BuildServerAdapter {
     /**
      * Invoked when a build is finished.  Iterates over the build output and identifies lines which contains 'SauceOnDemandSessionID',
      * and for each line, invokes the Sauce REST API to associate the TeamCity build number with the Sauce Job.
+     *
      * @param build
      */
     @Override
@@ -69,6 +70,7 @@ public class SauceServerAdapter extends BuildServerAdapter {
     /**
      * Invokes the Sauce REST API to store the TeamCity build number and pass/fail status within
      * Sauce.
+     *
      * @param build
      * @param sessionId
      */
@@ -78,24 +80,27 @@ public class SauceServerAdapter extends BuildServerAdapter {
         if (features.isEmpty()) return;
         for (SBuildFeatureDescriptor feature : features) {
             if (feature.getType().equals("sauce")) {
-                SauceREST sauceREST = new SauceREST(getUsername(feature, agentName), getAccessKey(feature, agentName), getDataCenter(feature, agentName));
-                Map<String, Object> updates = new HashMap<String, Object>();
+                HttpClientConfig config = HttpClientConfig.defaultConfig().interceptor(new UserAgentInterceptor());
+                SauceREST sauceREST = new SauceREST(
+                        getUsername(feature, agentName),
+                        getAccessKey(feature, agentName),
+                        getDataCenter(feature, agentName),
+                        config
+                );
+
                 try {
-                    String json = sauceREST.getJobInfo(sessionId);
-                    JSONObject jsonObject = (JSONObject) new JSONParser().parse(json);
                     String buildNumber = build.getBuildTypeExternalId() + build.getBuildNumber();
-                    logger.info("Setting build number " + buildNumber + " for job " + sessionId + " user: " + getUsername(feature, agentName));
-                    updates.put("build", buildNumber);
-                    if (jsonObject.get("passed") == null || jsonObject.get("passed").equals("")) {
-                        if (build.getStatusDescriptor().getStatus().isSuccessful()) {
-                            updates.put("passed", Boolean.TRUE.toString());
-                        } else if (build.getStatusDescriptor().getStatus().isFailed()) {
-                            updates.put("passed", Boolean.FALSE.toString());
-                        }
+                    logger.warn("Setting build number " + buildNumber + " for job " + sessionId + " user: " + getUsername(feature, agentName));
+                    UpdateJobParameter.Builder parameters = new UpdateJobParameter.Builder().setBuild(buildNumber);
+
+                    if (build.getStatusDescriptor().getStatus().isSuccessful()) {
+                        parameters.setPassed(true);
+                    } else if (build.getStatusDescriptor().getStatus().isFailed()) {
+                        parameters.setPassed(false);
                     }
 
-                    sauceREST.updateJobInfo(sessionId, updates);
-                } catch (org.json.simple.parser.ParseException e) {
+                    sauceREST.getJobsEndpoint().updateJob(sessionId, parameters.build());
+                } catch (IOException e) {
                     logger.error("Failed to parse JSON for session id: " + sessionId + " user: " + getUsername(feature, agentName), e);
                 }
             }
@@ -112,8 +117,8 @@ public class SauceServerAdapter extends BuildServerAdapter {
         return provider.getUsername();
     }
 
-    private String getDataCenter(SBuildFeatureDescriptor feature, String agentName) {
+    private DataCenter getDataCenter(SBuildFeatureDescriptor feature, String agentName) {
         ParametersProvider provider = new ParametersProvider(feature.getParameters(), agentName);
-        return provider.getDataCenter();
-    } 
+        return provider.getSauceRESTDataCenter();
+    }
 }

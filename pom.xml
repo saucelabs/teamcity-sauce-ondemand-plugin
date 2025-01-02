@@ -7,7 +7,7 @@
     <packaging>pom</packaging>
     <properties>
         <teamcity-version>2022.12</teamcity-version>
-        <ci-sauce.version>1.165</ci-sauce.version>
+        <ci-sauce.version>1.183</ci-sauce.version>
         <saucerest.version>1.0.42</saucerest.version>
         <main.basedir>${basedir}</main.basedir>
     </properties>
@@ -45,14 +45,14 @@
                     <execution>
                         <phase>generate-sources</phase>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <filterset id="filters">
                                     <filter token="VERSION" value="${project.version}" />
                                 </filterset>
                                 <copy preservelastmodified="true" file="${main.basedir}/src/main/resources/BuildUtils.java.template" tofile="${basedir}/src/main/java/com/saucelabs/teamcity/BuildUtils.java" overwrite="true">
                                     <filterset refid="filters" />
                                 </copy>
-                            </tasks>
+                            </target>
                         </configuration>
                         <goals>
                             <goal>run</goal>
@@ -94,8 +94,8 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <configuration>
-                        <source>7</source>
-                        <target>1.7</target>
+                        <source>8</source>
+                        <target>1.8</target>
                     </configuration>
                 </plugin>
             </plugins>
