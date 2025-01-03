@@ -5,6 +5,8 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
        default-autowire="constructor">
     <bean id="browserFactory" class="com.saucelabs.ci.BrowserFactory" autowire="default" lazy-init="true"/>
-    <bean id="sauceConnectManager" class="com.saucelabs.ci.sauceconnect.SauceConnectFourManager" autowire="default" lazy-init="true"/>
+    <bean id="sauceConnectManager" class="com.saucelabs.ci.sauceconnect.SauceConnectManager" autowire="default" lazy-init="true">
+        <constructor-arg value="teamcity"/>
+    </bean>
     <bean id="sauceLifeCycleAdapter" class="com.saucelabs.teamcity.SauceLifeCycleAdapter" lazy-init="default" autowire="default"/>
 </beans>
