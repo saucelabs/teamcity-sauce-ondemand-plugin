@@ -156,7 +156,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
                     Boolean.TRUE,
                     null
             );
-        } catch (Throwable e) {
+        } catch (AbstractSauceTunnelManager.SauceConnectException e) {
             logError(runningBuild, "Error launching Sauce Connect", e);
             runningBuild.getBuildLogger().logBuildProblem(BuildProblemData.createBuildProblem(
                     "SAUCE_CONNECT",
