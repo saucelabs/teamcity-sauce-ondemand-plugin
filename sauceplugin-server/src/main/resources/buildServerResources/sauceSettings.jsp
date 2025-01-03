@@ -101,7 +101,7 @@
 </tr>
 
 <tr id="saucePlugin.useLatestSauceConnect.container">
-    <th><label for="saucePlugin.useLatestSauceConnect">Use latest <a href="https://wiki.saucelabs.com/display/DOCS/Sauce+Connect+Proxy">Sauce Connect</a> (if unchecked, uses 4.5.4):</label></th>
+    <th><label for="saucePlugin.useLatestSauceConnect">Use latest <a href="https://docs.saucelabs.com/secure-connections/sauce-connect-5/">Sauce Connect</a> (if unchecked, uses 5.2.2):</label></th>
     <td>
         <props:checkboxProperty name="saucePlugin.useLatestSauceConnect" treatFalseValuesCorrectly="${true}"
                                 uncheckedValue="false"/>
