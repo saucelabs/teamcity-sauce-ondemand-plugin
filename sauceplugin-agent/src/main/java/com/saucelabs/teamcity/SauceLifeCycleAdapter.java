@@ -18,6 +18,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collection;
@@ -156,7 +157,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
                     Boolean.TRUE,
                     null
             );
-        } catch (Throwable e) {
+        } catch (IOException e) {
             logError(runningBuild, "Error launching Sauce Connect", e);
             runningBuild.getBuildLogger().logBuildProblem(BuildProblemData.createBuildProblem(
                     "SAUCE_CONNECT",
