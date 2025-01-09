@@ -3,9 +3,8 @@ package com.saucelabs.teamcity;
 import com.saucelabs.ci.Browser;
 import com.saucelabs.ci.BrowserFactory;
 import com.saucelabs.ci.sauceconnect.AbstractSauceTunnelManager;
-import com.saucelabs.ci.sauceconnect.SauceConnectFourManager;
-import com.saucelabs.saucerest.SauceREST;
-import com.saucelabs.saucerest.api.HttpClientConfig;
+import com.saucelabs.ci.sauceconnect.SauceConnectManager;
+import com.saucelabs.saucerest.DataCenter;
 import jetbrains.buildServer.BuildProblemData;
 import jetbrains.buildServer.agent.*;
 import jetbrains.buildServer.log.Loggers;
@@ -18,6 +17,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,7 +34,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
     /**
      * Singleton Sauce Connect Manager instance, populated by Spring.
      */
-    private final SauceConnectFourManager sauceConnectManager;
+    private final SauceConnectManager sauceConnectManager;
     /**
      * Singleton instance used to retrieve browser information supported by Sauce, populated by Spring.
      */
@@ -58,7 +58,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
     public SauceLifeCycleAdapter(
             @NotNull EventDispatcher<AgentLifeCycleListener> agentDispatcher,
             BrowserFactory sauceBrowserFactory,
-            SauceConnectFourManager sauceConnectManager) {
+            SauceConnectManager sauceConnectManager) {
         agentDispatcher.addListener(this);
         this.sauceBrowserFactory = sauceBrowserFactory;
         this.sauceConnectManager = sauceConnectManager;
@@ -81,7 +81,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
         for (AgentBuildFeature feature : features) {
             logInfo(build, "Closing Sauce Connect");
             if (shouldStartSauceConnect(feature)) {
-                String options = getSauceConnectOptions(build, feature);
+                String options = getSauceConnectOptions(build, feature, null);
                 PrintStream printStream = new PrintStream(new NullOutputStream()) {
                     @Override
                     public void println(String x) {
@@ -92,15 +92,6 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
                 sauceConnectManager.closeTunnelsForPlan(getUsername(feature, agentName), options, printStream);
             }
         }
-    }
-
-    /**
-     * @param feature contains the Sauce information set by the user within the build configuration
-     * @return boolean indicating whether Sauce Connect v3 should be started
-     */
-    private boolean shouldStartSauceConnectThree(AgentBuildFeature feature) {
-        String useSauceConnect = feature.getParameters().get(Constants.USE_SAUCE_CONNECT_3);
-        return useSauceConnect != null && useSauceConnect.equals("true");
     }
 
     /**
@@ -130,9 +121,11 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
      */
     private void startSauceConnect(final AgentRunningBuild runningBuild, AgentBuildFeature feature) {
         String agentName = runningBuild.getAgentConfiguration().getName();
+        ParametersProvider provider = new ParametersProvider(feature.getParameters(), agentName);
+        DataCenter region = provider.getSauceRESTDataCenter();
 
         logInfo(runningBuild, "Starting Sauce Connect");
-        String options = getSauceConnectOptions(runningBuild, feature);
+        String options = getSauceConnectOptions(runningBuild, feature, region);
         addSharedEnvironmentVariable(runningBuild, Constants.TUNNEL_IDENTIFIER, AbstractSauceTunnelManager.getTunnelName(options, "default"));
 
         PrintStream printStream = new PrintStream(new NullOutputStream()) {
@@ -149,14 +142,15 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
             sauceConnectManager.openConnection(
                     getUsername(feature, agentName),
                     getAccessKey(feature, agentName),
+                    provider.getSauceRESTDataCenter(),
                     Integer.parseInt(getSeleniumPort(feature)),
                     null,
                     options,
                     printStream,
-                    Boolean.TRUE,
+                    true,
                     null
             );
-        } catch (Throwable e) {
+        } catch (IOException e) {
             logError(runningBuild, "Error launching Sauce Connect", e);
             runningBuild.getBuildLogger().logBuildProblem(BuildProblemData.createBuildProblem(
                     "SAUCE_CONNECT",
@@ -166,15 +160,19 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
         }
     }
 
-    private String getSauceConnectOptions(AgentRunningBuild runningBuild, AgentBuildFeature feature) {
+    private String getSauceConnectOptions(AgentRunningBuild runningBuild, AgentBuildFeature feature, DataCenter region) {
         String options = feature.getParameters().get(Constants.SAUCE_CONNECT_OPTIONS);
-        SauceREST sauceREST = getSauceREST(feature, runningBuild.getAgentConfiguration().getName());
 
-        if (options == null || options.equals("")) {
+        if (options == null || options.isEmpty()) {
             //default tunnel identifier to teamcity-%teamcity.agent.name%
-            options = "-i teamcity-" + StringUtils.deleteWhitespace(runningBuild.getSharedConfigParameters().get("teamcity.agent.name"));
+            options = "--tunnel-name teamcity-" + StringUtils.deleteWhitespace(runningBuild.getSharedConfigParameters().get("teamcity.agent.name"));
         }
-        options = "-x " + sauceREST.getServer() + "rest/v1" + " " + options;
+
+        if (region != null) {
+            String regionName = region.name().toLowerCase().replace("_", "-");
+            options = "--region " + regionName + " " + options;
+        }
+
         return options;
     }
 
@@ -343,17 +341,6 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
     private String getDataCenter(AgentBuildFeature feature, String agentName) {
         ParametersProvider provider = new ParametersProvider(feature.getParameters(), agentName);
         return provider.getDataCenter();
-    }
-
-    protected SauceREST getSauceREST(AgentBuildFeature feature, String agentName) {
-        ParametersProvider provider = new ParametersProvider(feature.getParameters(), agentName);
-        HttpClientConfig config = HttpClientConfig.defaultConfig().interceptor(new UserAgentInterceptor());
-        return new SauceREST(
-                provider.getUsername(),
-                provider.getAccessKey(),
-                provider.getSauceRESTDataCenter(),
-                config
-        );
     }
 
     /**

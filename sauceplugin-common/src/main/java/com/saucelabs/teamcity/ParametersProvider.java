@@ -44,11 +44,11 @@ public class ParametersProvider {
             return dataCenterRest;
         }
 
-        if (dataCenterStr.equals("US")) {
+        if (dataCenterStr.equalsIgnoreCase("US")) {
             return DataCenter.US_WEST;
         }
 
-        if (dataCenterStr.equals("EU")) {
+        if (dataCenterStr.equalsIgnoreCase("EU")) {
             return DataCenter.EU_CENTRAL;
         }
 

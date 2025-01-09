@@ -90,7 +90,7 @@ public class SauceServerAdapter extends BuildServerAdapter {
 
                 try {
                     String buildNumber = build.getBuildTypeExternalId() + build.getBuildNumber();
-                    logger.warn("Setting build number " + buildNumber + " for job " + sessionId + " user: " + getUsername(feature, agentName));
+                    logger.info("Setting build number " + buildNumber + " for job " + sessionId + " user: " + getUsername(feature, agentName));
                     UpdateJobParameter.Builder parameters = new UpdateJobParameter.Builder().setBuild(buildNumber);
 
                     if (build.getStatusDescriptor().getStatus().isSuccessful()) {
