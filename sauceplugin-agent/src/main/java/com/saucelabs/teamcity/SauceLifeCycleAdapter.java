@@ -143,7 +143,6 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
                     getUsername(feature, agentName),
                     getAccessKey(feature, agentName),
                     provider.getSauceRESTDataCenter(),
-                    Integer.parseInt(getSeleniumPort(feature)),
                     null,
                     options,
                     printStream,
