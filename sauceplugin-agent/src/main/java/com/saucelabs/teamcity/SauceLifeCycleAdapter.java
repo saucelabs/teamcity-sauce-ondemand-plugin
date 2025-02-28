@@ -131,7 +131,6 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
                 true
             );
         } catch (IOException e) {
-            logger.error("Error launching Sauce Connect", e);
             runningBuild.getBuildLogger().logBuildProblem(BuildProblemData.createBuildProblem(
                     "SAUCE_CONNECT",
                     "FAILED_TO_START_SAUCE_CONNECT",
