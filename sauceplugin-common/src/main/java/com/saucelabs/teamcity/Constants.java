@@ -35,6 +35,7 @@ public class Constants {
     public static final String SAUCE_CONNECT_KEY = "saucePlugin.sauceConnect";
     public static final String USE_LATEST_SAUCE_CONNECT = "saucePlugin.useLatestSauceConnect";
     public static final String DISABLE_RESULTS_KEY = "saucePlugin.disableResults";
+    public static final String DEBUG_MODE = "saucePlugin.debugMode";
     public static final String SAUCE_USERNAME = "SAUCE_USERNAME";
     public static final String SAUCE_ACCESS_KEY = "SAUCE_ACCESS_KEY";
     public static final String SAUCE_DATA_CENTER = "SAUCE_DATA_CENTER";

@@ -64,7 +64,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
     public void beforeBuildFinish(@NotNull final AgentRunningBuild build, @NotNull BuildFinishedStatus buildStatus) {
         super.beforeBuildFinish(build, buildStatus);
 
-        Logger logger = new LoggerBuildAndAgent(build.getBuildLogger());
+        Logger logger = new LoggerBuildAndAgent(build.getBuildLogger(), isDebugMode(build));
         String agentName = build.getAgentConfiguration().getName();
 
         Collection<AgentBuildFeature> features = build.getBuildFeaturesOfType("sauce");
@@ -87,7 +87,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
     @Override
     public void buildStarted(@NotNull AgentRunningBuild runningBuild) {
         super.buildStarted(runningBuild);
-        Logger logger = new LoggerBuildAndAgent(runningBuild.getBuildLogger());
+        Logger logger = new LoggerBuildAndAgent(runningBuild.getBuildLogger(), isDebugMode(runningBuild));
         logger.info("Build Started, setting Sauce environment variables");
         Collection<AgentBuildFeature> features = runningBuild.getBuildFeaturesOfType("sauce");
         if (features.isEmpty()) return;
@@ -106,7 +106,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
      * @param feature      contains the Sauce information set by the user within the build configuration
      */
     private void startSauceConnect(final AgentRunningBuild runningBuild, AgentBuildFeature feature) {
-        Logger logger = new LoggerBuildAndAgent(runningBuild.getBuildLogger());
+        Logger logger = new LoggerBuildAndAgent(runningBuild.getBuildLogger(), isDebugMode(runningBuild));
         String agentName = runningBuild.getAgentConfiguration().getName();
         ParametersProvider provider = new ParametersProvider(feature.getParameters(), agentName);
         DataCenter region = provider.getSauceRESTDataCenter();
@@ -369,5 +369,15 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
                 build.getBuildLogger().logMessage(DefaultMessagesInfo.createTextMessage(x));
             }
         };
+    }
+
+    private Boolean isDebugMode(@NotNull AgentRunningBuild runningBuild) {
+        Collection<AgentBuildFeature> features = runningBuild.getBuildFeaturesOfType("sauce");
+        for (AgentBuildFeature feature : features) {
+            if (feature.getParameters().get(Constants.DEBUG_MODE).equals("true")) {
+                return true;
+            }
+        }
+        return false;
     }
 }
