@@ -73,8 +73,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
             logger.info("Closing Sauce Connect");
             if (shouldStartSauceConnect(feature)) {
                 String options = getSauceConnectOptions(build, feature, null);
-                PrintStream printStream = createPrintStream(build);
-                sauceConnectManager.closeTunnelsForPlan(getUsername(feature, agentName), options, printStream);
+                sauceConnectManager.closeTunnelsForPlan(getUsername(feature, agentName), options, logger);
             }
         }
     }
