@@ -4,6 +4,7 @@ import com.saucelabs.saucerest.DataCenter;
 import com.saucelabs.saucerest.SauceREST;
 import com.saucelabs.saucerest.api.HttpClientConfig;
 import com.saucelabs.saucerest.model.jobs.UpdateJobParameter;
+import com.saucelabs.teamcity.Constants;
 import com.saucelabs.teamcity.ParametersProvider;
 import com.saucelabs.teamcity.UserAgentInterceptor;
 import jetbrains.buildServer.serverSide.BuildServerAdapter;
@@ -79,7 +80,7 @@ public class SauceServerAdapter extends BuildServerAdapter {
         Collection<SBuildFeatureDescriptor> features = build.getBuildType().getBuildFeatures();
         if (features.isEmpty()) return;
         for (SBuildFeatureDescriptor feature : features) {
-            if (feature.getType().equals("sauce")) {
+            if (feature.getType().equals(Constants.BUILD_FEATURE_TYPE)) {
                 HttpClientConfig config = HttpClientConfig.defaultConfig().interceptor(new UserAgentInterceptor());
                 SauceREST sauceREST = new SauceREST(
                         getUsername(feature, agentName),

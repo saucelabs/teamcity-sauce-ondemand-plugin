@@ -67,7 +67,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
         Logger logger = new LoggerBuildAndAgent(build.getBuildLogger(), isDebugMode(build));
         String agentName = build.getAgentConfiguration().getName();
 
-        Collection<AgentBuildFeature> features = build.getBuildFeaturesOfType("sauce");
+        Collection<AgentBuildFeature> features = build.getBuildFeaturesOfType(Constants.BUILD_FEATURE_TYPE);
         if (features.isEmpty()) return;
         for (AgentBuildFeature feature : features) {
             logger.info("Closing Sauce Connect");
@@ -88,7 +88,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
         super.buildStarted(runningBuild);
         Logger logger = new LoggerBuildAndAgent(runningBuild.getBuildLogger(), isDebugMode(runningBuild));
         logger.info("Build Started, setting Sauce environment variables");
-        Collection<AgentBuildFeature> features = runningBuild.getBuildFeaturesOfType("sauce");
+        Collection<AgentBuildFeature> features = runningBuild.getBuildFeaturesOfType(Constants.BUILD_FEATURE_TYPE);
         if (features.isEmpty()) return;
         for (AgentBuildFeature feature : features) {
             populateEnvironmentVariables(runningBuild, feature, logger);
@@ -371,7 +371,7 @@ public class SauceLifeCycleAdapter extends AgentLifeCycleAdapter {
     }
 
     private Boolean isDebugMode(@NotNull AgentRunningBuild runningBuild) {
-        Collection<AgentBuildFeature> features = runningBuild.getBuildFeaturesOfType("sauce");
+        Collection<AgentBuildFeature> features = runningBuild.getBuildFeaturesOfType(Constants.BUILD_FEATURE_TYPE);
         for (AgentBuildFeature feature : features) {
             if (feature.getParameters().get(Constants.DEBUG_MODE).equals("true")) {
                 return true;

@@ -172,7 +172,7 @@ public class SauceBuildResultsTab extends BuildTab {
         Collection<SBuildFeatureDescriptor> features = build.getBuildType().getBuildFeatures();
         if (features.isEmpty()) return null;
         for (SBuildFeatureDescriptor feature : features) {
-            if (feature.getType().equals("sauce")) {
+            if (feature.getType().equals(Constants.BUILD_FEATURE_TYPE)) {
                 return feature;
             }
 

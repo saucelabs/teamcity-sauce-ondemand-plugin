@@ -1,5 +1,6 @@
 package com.saucelabs.teamcity.settings;
 
+import com.saucelabs.teamcity.Constants;
 import jetbrains.buildServer.serverSide.BuildFeature;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import org.jetbrains.annotations.NotNull;
@@ -21,7 +22,7 @@ public class SauceSystemSettings extends BuildFeature {
     @NotNull
     @Override
     public String getType() {
-        return "sauce";
+        return Constants.BUILD_FEATURE_TYPE;
     }
 
     @NotNull
