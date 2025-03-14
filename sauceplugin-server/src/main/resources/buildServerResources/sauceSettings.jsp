@@ -107,3 +107,11 @@
                                 uncheckedValue="false"/>
     </td>
 </tr>
+
+<tr id="saucePlugin.embedResults.container">
+    <th><label for="saucePlugin.debugMode">Debug Mode:</label></th>
+    <td>
+        <props:checkboxProperty name="saucePlugin.debugMode" treatFalseValuesCorrectly="${true}"
+                                uncheckedValue="false"/>
+    </td>
+</tr>

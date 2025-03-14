@@ -6,9 +6,8 @@
     <version>1.57-SNAPSHOT</version>
     <packaging>pom</packaging>
     <properties>
-        <teamcity-version>2022.12</teamcity-version>
-        <ci-sauce.version>2.3</ci-sauce.version>
-        <saucerest.version>1.0.42</saucerest.version>
+        <teamcity-version>2024.12</teamcity-version>
+        <ci-sauce.version>2.4</ci-sauce.version>
         <main.basedir>${basedir}</main.basedir>
     </properties>
     <repositories>
