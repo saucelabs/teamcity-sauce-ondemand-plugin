@@ -9,11 +9,11 @@
      <file>
          <source>target/teamcity-plugin.xml</source>
          <outputDirectory>/</outputDirectory>
-     </file> 
+     </file>
      <file>
          <source>target/teamcity-agent.zip</source>
          <outputDirectory>agent</outputDirectory>
-     </file> 
+     </file>
   </files>
   <moduleSets>
     <moduleSet>
@@ -21,7 +21,7 @@
        <includes>
            <include>com.saucelabs.teamcity:sauceplugin-server</include>
            <include>com.saucelabs.teamcity:sauceplugin-common</include>
-       </includes> 
+       </includes>
        <binaries>
            <outputDirectory>server</outputDirectory>
            <unpack>false</unpack>
