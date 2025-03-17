@@ -11,7 +11,7 @@
          <outputDirectory>/</outputDirectory>
      </file>
      <file>
-         <source>target/teamcity-agent.zip</source>
+         <source>target/teamcity-agent-beta.zip</source>
          <outputDirectory>agent</outputDirectory>
      </file>
   </files>

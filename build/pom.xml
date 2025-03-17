@@ -73,7 +73,7 @@
                   <goal>single</goal>
                 </goals>
                 <configuration>
-                  <finalName>teamcity-agent</finalName>
+                  <finalName>teamcity-agent-beta</finalName>
                   <appendAssemblyId>false</appendAssemblyId>
                   <descriptors>
                     <descriptor>plugin-agent-assembly.xml</descriptor>
@@ -87,7 +87,7 @@
                   <goal>single</goal>
                 </goals>
                 <configuration>
-                  <finalName>sauceplugin-${project.parent.version}</finalName>
+                  <finalName>sauceplugin-beta-${project.parent.version}</finalName>
                   <outputDirectory>${project.parent.build.directory}</outputDirectory>
                   <appendAssemblyId>false</appendAssemblyId>
                   <descriptors>

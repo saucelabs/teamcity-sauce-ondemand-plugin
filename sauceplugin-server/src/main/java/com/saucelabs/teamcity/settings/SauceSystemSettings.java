@@ -28,7 +28,7 @@ public class SauceSystemSettings extends BuildFeature {
     @NotNull
     @Override
     public String getDisplayName() {
-        return "Sauce Labs Build Feature";
+        return "Sauce Labs Build Feature Beta";
     }
 
     @Nullable
