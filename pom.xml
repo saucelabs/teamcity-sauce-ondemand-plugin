@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.saucelabs.teamcity</groupId>
     <artifactId>sauceplugin</artifactId>
-    <version>1.57</version>
+    <version>1.58-SNAPSHOT</version>
     <packaging>pom</packaging>
     <properties>
         <teamcity-version>2024.12</teamcity-version>
@@ -24,7 +24,7 @@
         <connection>scm:git:git://github.com/saucelabs/teamcity-sauce-ondemand-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:saucelabs/teamcity-sauce-ondemand-plugin.git</developerConnection>
         <url>git@github.com:saucelabs/teamcity-sauce-ondemand-plugin.git</url>
-      <tag>sauceplugin-1.57</tag>
+      <tag>sauceplugin-1.55</tag>
   </scm>
     <distributionManagement>
         <repository>
