@@ -44,6 +44,8 @@ public class SauceBuildResultsTab extends BuildTab {
 
     private static final String HMAC_KEY = "HMACMD5";
 
+    static final String NO_TESTS = "No Sauce Labs tests were found for this build.";
+
     public SauceBuildResultsTab(WebControllerManager manager, BuildsManager buildManager, PluginDescriptor myPluginDescriptor) {
         super("sauceBuildResults", "Sauce Labs Results", manager, buildManager, myPluginDescriptor.getPluginResourcesPath("sauceBuildResults.jsp"));
     }
@@ -59,19 +61,24 @@ public class SauceBuildResultsTab extends BuildTab {
         //TODO can we store the Sauce session id on the build instance?
         //invoke Sauce REST API to retrieve job ids for TC build
         List<JobInformation> jobs = new ArrayList<JobInformation>();
+        String error = null;
+        String notice = null;
         try {
             jobs = retrieveJobIdsFromSauce(build);
-        } catch (IOException e) {
+        } catch (SauceResultsException e) {
+            if (e.isNotice()) {
+                notice = e.getMessage();
+            } else {
+                error = e.getMessage();
+            }
+        } catch (Exception | LinkageError e) {
+            // The JSP requires "jobs" to be present, so a failure here must never skip the model.put calls below
             logger.error("Error retrieving job information", e);
-        } catch (JSONException e) {
-            logger.error("Error retrieving job information", e);
-
-        } catch (InvalidKeyException e) {
-            logger.error("Error retrieving job information", e);
-        } catch (NoSuchAlgorithmException e) {
-            logger.error("Error retrieving job information", e);
+            error = SauceResultsErrors.UNEXPECTED;
         }
         model.put("jobs", jobs);
+        model.put("sauceError", error);
+        model.put("sauceNotice", notice);
     }
 
     /**
@@ -114,12 +121,11 @@ public class SauceBuildResultsTab extends BuildTab {
      *
      * @param build
      * @return
-     * @throws IOException
-     * @throws JSONException
+     * @throws SauceResultsException with the message to show on the tab when there are no jobs to list
      * @throws InvalidKeyException
      * @throws NoSuchAlgorithmException
      */
-    public List<JobInformation> retrieveJobIdsFromSauce(SBuild build) throws IOException, JSONException, InvalidKeyException, NoSuchAlgorithmException {
+    public List<JobInformation> retrieveJobIdsFromSauce(SBuild build) throws SauceResultsException, InvalidKeyException, NoSuchAlgorithmException, UnsupportedEncodingException {
         //invoke Sauce Rest API to find plan results with those values
         List<JobInformation> jobInformation = new ArrayList<JobInformation>();
 
@@ -131,23 +137,34 @@ public class SauceBuildResultsTab extends BuildTab {
         ParametersProvider provider = new ParametersProvider(sauceBuildFeature.getParameters(), agentName);
         String username = provider.getUsername();
         String accessKey = provider.getAccessKey();
+        if (username == null || username.trim().isEmpty() || accessKey == null || accessKey.trim().isEmpty()) {
+            throw SauceResultsException.error("Add your Sauce Labs username and access key in the Sauce Labs build feature.");
+        }
         DataCenter dataCenter = provider.getSauceRESTDataCenter();
         String buildNumber = build.getBuildTypeExternalId() + build.getBuildNumber();
         HttpClientConfig config = HttpClientConfig.defaultConfig().interceptor(new UserAgentInterceptor());
         SauceREST sauceREST = new SauceREST(username, accessKey, dataCenter, config);
 
-        String buildId = retrieveBuildInformationFromSauce(sauceREST, buildNumber);
+        List<Job> response;
+        try {
+            String buildId = retrieveBuildInformationFromSauce(sauceREST, buildNumber);
 
-        if (buildId == "") {
-            logger.error("Unable to find build for name: `" + buildNumber + "`");
-            return jobInformation;
-        }
+            if (buildId == "") {
+                logger.error("Unable to find build for name: `" + buildNumber + "`");
+                throw SauceResultsException.notice(NO_TESTS);
+            }
 
-        logger.info("Retrieving jobs for  " + buildId);
-        List<Job> response = sauceREST.getJobsEndpoint().getJobDetails(getJobIdsForBuild(sauceREST, buildId));
-        if (response.isEmpty()) {
-            logger.error("Unable to get jobs for ID: `" + buildId + "`");
-            return jobInformation;
+            logger.info("Retrieving jobs for  " + buildId);
+            response = sauceREST.getJobsEndpoint().getJobDetails(getJobIdsForBuild(sauceREST, buildId));
+            if (response.isEmpty()) {
+                logger.error("Unable to get jobs for ID: `" + buildId + "`");
+                throw SauceResultsException.notice(NO_TESTS);
+            }
+        } catch (SauceResultsException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error("Error retrieving job information", e);
+            throw SauceResultsException.error(SauceResultsErrors.toMessage(e));
         }
 
         for (Job job : response) {
