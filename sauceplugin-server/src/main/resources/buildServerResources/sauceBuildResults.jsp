@@ -6,28 +6,42 @@
 <jsp:useBean id="build" scope="request" type="jetbrains.buildServer.serverSide.SBuild"/>
 <jsp:useBean id="jobs" scope="request" type="java.util.ArrayList"/>
 
-<div id="sauce-job-list" class="groupBox">
-    <table>
-        <tr>
-            <th>Job Id</th>
-            <th>Name</th>
-            <th>Status</th>
-        </tr>
-        <c:forEach var="jobIter" items="${jobs}">
-            <tr>
-                <td>
-                    <a href="<%=request.getAttribute("javax.servlet.forward.request_uri")%>?buildId=<%=request.getParameter("buildId")%>&buildTypeId=<%=request.getParameter("buildTypeId")%>&tab=<%=request.getParameter("tab")%>&jobId=${jobIter.jobId}&logUrl=${jobIter.logUrl}&hmac=${jobIter.hmac}">${jobIter.jobId}</a>
-                </td>
-                <td>
-                        ${jobIter.name}
-                </td>
-                <td>
-                        ${jobIter.status}
-                </td>
-            </tr>
-        </c:forEach>
-    </table>
-</div>
+<c:choose>
+    <c:when test="${not empty sauceError}">
+        <div id="sauce-results-error" class="attentionComment">
+            <c:out value="${sauceError}"/>
+        </div>
+    </c:when>
+    <c:when test="${not empty sauceNotice}">
+        <p id="sauce-results-notice">
+            <c:out value="${sauceNotice}"/>
+        </p>
+    </c:when>
+    <c:otherwise>
+        <div id="sauce-job-list" class="groupBox">
+            <table>
+                <tr>
+                    <th>Job Id</th>
+                    <th>Name</th>
+                    <th>Status</th>
+                </tr>
+                <c:forEach var="jobIter" items="${jobs}">
+                    <tr>
+                        <td>
+                            <a href="<%=request.getAttribute("javax.servlet.forward.request_uri")%>?buildId=<%=request.getParameter("buildId")%>&buildTypeId=<%=request.getParameter("buildTypeId")%>&tab=<%=request.getParameter("tab")%>&jobId=${jobIter.jobId}&logUrl=${jobIter.logUrl}&hmac=${jobIter.hmac}">${jobIter.jobId}</a>
+                        </td>
+                        <td>
+                                ${jobIter.name}
+                        </td>
+                        <td>
+                                ${jobIter.status}
+                        </td>
+                    </tr>
+                </c:forEach>
+            </table>
+        </div>
+    </c:otherwise>
+</c:choose>
 
 <c:choose>
     <c:when test="${param.jobId != null}">
